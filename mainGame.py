@@ -1,29 +1,8 @@
 import pygame
 import math
+import classes as c
 pygame.init()
-# Tile Class: Stores size, row, column, x, y and picture
-class TILE:
-    def __init__(self, size, row, col, x, y, img):
-        self.size = size
-        self.row = row
-        self.col = col
-        self.x = x
-        self.y = y
-        self.img = img
-    # Render tile to screen
-    def render(self, screen):
-        rescaledImg = pygame.transform.scale(self.img, (self.size, self.size))
-        screen.blit(rescaledImg, (self.x, self.y))
-    # Update the size and position of tile, for when screen size is changed
-    def updateSizeAndPos(self, size, screenWidth, screenHeight, rows, cols):
-        self.size = size
-        top = (screenHeight - (size * rows)) // 2
-        left = (screenWidth - (size * cols)) // 2
-        self.x = left + (self.col * size)
-        self.y = top + (self.row * size)
-    # Get position, so the player/enemy can access this for movement (less repetition of code)
-    def getPosition(self):
-        return (self.x, self.y)
+
 # function to find the size of a tile, given the number of rows, columns, and size of the screen
 def findSize(screen, rows, cols):
     screenWidth = screen.get_width()
@@ -57,7 +36,7 @@ cols = 5
 size = findSize(screen, rows, cols)
 top = (screenHeight - (size * rows)) // 2
 left = (screenWidth - (size * cols)) // 2
-tiles = [[TILE(size, row, col, left + (col * size), top + (row * size), image) for col in range(cols)] for row in range(rows)]
+tiles = [[c.TILE(size, row, col, left + (col * size), top + (row * size), image) for col in range(cols)] for row in range(rows)]
 # Time
 clock = pygame.time.Clock()
 dt = 0
