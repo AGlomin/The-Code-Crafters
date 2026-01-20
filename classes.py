@@ -23,5 +23,20 @@ class TILE:
     # Get position, so the player/enemy can access this for movement (less repetition of code)
     def getPosition(self):
         return (self.x, self.y)
-    
-    
+# Parent Class: Agent, used as a base for both the player and enemy class
+class AGENT:
+    def __init__ (self):
+        return
+
+# Enemy Class: Class representing an enemy.
+class ENEMY(AGENT):
+    def __init__ (self):
+        super().__init__()
+# Player Class: Class representing a player character. NOTE: Medic does NOT use this class, instead uses a child class of player
+class PLAYER(AGENT):
+    def __init__ (self):
+        super().__init__()
+# Medic Class: Subclass of Player, to override attack to be a heal
+class MEDIC(PLAYER):
+    def __init__ (self):
+        super().__init__()
