@@ -1,0 +1,9 @@
+https://docs.google.com/document/d/1Bd7mr835f6V45LYjThHiKYRIuatgYOavxDL4tLXQWF4/edit?usp=sharing
+
+file structure:
+/telemetry
+  |-events.py (event scheme)
+  |-validator.py (data quality checks)
+  |-logger.py (main logging API)
+  |-storage.py (CSV writer)
+  |-telemetry.csv (generated at runtime)
