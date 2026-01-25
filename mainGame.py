@@ -37,6 +37,9 @@ size = findSize(screen, rows, cols)
 top = (screenHeight - (size * rows)) // 2
 left = (screenWidth - (size * cols)) // 2
 tiles = [[c.TILE(size, row, col, left + (col * size), top + (row * size), image) for col in range(cols)] for row in range(rows)]
+# Temporary: Initialise player and enemy, for testing of rendering
+players = [c.PLAYER(1, 1, 1, 1, pygame.math.Vector2(0, i)) for i in range(3)]
+enemies = [c.ENEMY(1, 1, 1, 1, pygame.math.Vector2(cols - 1, i + 1)) for i in range(3)]
 # Time
 clock = pygame.time.Clock()
 dt = 0
@@ -78,6 +81,12 @@ while running:
             if updateSize:
                 col.updateSizeAndPos(size, screenWidth, screenHeight, rows, cols)
             col.render(screen)
+    # Render player agents
+    for player in players:
+        player.render(screen, tiles)
+    # Render enemy agents
+    for enemy in enemies:
+        enemy.render(screen, tiles)
     pygame.display.flip()
     # Update time and frame
     dt = clock.tick(30)
