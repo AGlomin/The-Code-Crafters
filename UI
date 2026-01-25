@@ -34,3 +34,11 @@ entry_password.pack()
 tk.Button(root, text="Login", command=login).pack(pady=15)
 
 root.mainloop()
+
+# --- main.py ---
+USERNAME = "Malika"
+PASSWORD = "MALIKA COOL"
+
+def check_login(user, pwd):
+    """Return True if username and password match."""
+    return user == USERNAME and pwd == PASSWORD
