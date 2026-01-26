@@ -27,19 +27,18 @@ screen = createScreen(screenWidth, screenHeight)
 fullscreen = False
 oldWidth = screenWidth
 oldHeight = screenHeight
-# Load the assets. All assets should be 32 x 32 pixels big
-image = pygame.image.load("assets/tile.png")
-
 # Initialise the grid, temporarily has a set size.
 rows = 4
 cols = 5
 size = findSize(screen, rows, cols)
 top = (screenHeight - (size * rows)) // 2
 left = (screenWidth - (size * cols)) // 2
-tiles = [[c.TILE(size, row, col, left + (col * size), top + (row * size), image) for col in range(cols)] for row in range(rows)]
+tiles = [[c.TILE(size, row, col, left + (col * size), top + (row * size), "tile") for col in range(cols)] for row in range(rows)]
 # Temporary: Initialise player and enemy, for testing of rendering
-players = [c.PLAYER(1, 1, 1, 1, pygame.math.Vector2(0, i)) for i in range(3)]
-enemies = [c.ENEMY(1, 1, 1, 1, pygame.math.Vector2(cols - 1, i + 1)) for i in range(3)]
+playerTitles = ["brawler", "bomber", "medic"]
+enemyTitles = [f"en{i}" for i in range(3)]
+players = [c.PLAYER(1, 1, 1, 1, pygame.math.Vector2(0, i), f"{playerTitles[i]}Proto") for i in range(3)]
+enemies = [c.ENEMY(1, 1, 1, 1, pygame.math.Vector2(cols - 1, i + 1), f"en{enemyTitles[i]}") for i in range(3)]
 # Time
 clock = pygame.time.Clock()
 dt = 0

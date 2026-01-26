@@ -2,13 +2,19 @@ import pygame
 
 # Tile Class: Stores size, row, column, x, y and picture
 class TILE:
-    def __init__(self, size, row, col, x, y, img):
+    def __init__(self, size, row, col, x, y, imgLocation):
         self.size = size
         self.row = row
         self.col = col
         self.x = x
         self.y = y
-        self.img = img
+        try:
+            self.img = pygame.image.load(f"assets/{imgLocation}.png")
+        except:
+            # Use the default texture not found texture
+            self.img = pygame.Surface((32, 32))
+            pygame.draw.rect(self.img, pygame.Color(255, 0, 255), (0, 0, 16, 16))
+            pygame.draw.rect(self.img, pygame.Color(255, 0, 255), (16, 16, 16, 16))
     # Render tile to screen
     def render(self, screen):
         rescaledImg = pygame.transform.scale(self.img, (self.size, self.size))
@@ -32,7 +38,7 @@ class TILE:
         return -1, -1
 # Parent Class: Agent, used as a base for both the player and enemy class
 class AGENT:
-    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos):
+    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName):
         self.maxHP = maxHP
         self.HP = maxHP
         self.baseAtk = baseAtk
@@ -42,14 +48,26 @@ class AGENT:
         # Pos is given as a vect2, where the x corresponds to the column, and the y corresponds to the row
         self.pos = pos
         self.resetMoveToPos()
-        self.color = pygame.Color(255,255,255)
+        try:
+            self.spritesheet = pygame.image.load(f"assets/{spritesheetName}.png")
+        except:
+            # Use the default texture not found texture
+            self.spritesheet = pygame.Surface((32, 32))
+            pygame.draw.rect(self.spritesheet, pygame.Color(255, 0, 255), (0, 0, 16, 16))
+            pygame.draw.rect(self.spritesheet, pygame.Color(255, 0, 255), (16, 16, 16, 16))
     def render(self, screen, tiles):
         tile = tiles[round(self.pos.y)][round(self.pos.x)]
         xRender, yRender = tile.getPosition()
         sizeRender = tile.getSize()
-        # Temp: Draw a circle
-        rad = sizeRender // 2
-        pygame.draw.circle(screen, self.color, (xRender + rad, yRender + rad), rad)
+        # For now, use a single sprite (found at row 0, column 0 in sprite sheet)
+        spritesheetRow = 0
+        spritesheetCol = 0
+        # Only get the current sprite. SRCALPHA flag ensures a transparent background
+        sprite = pygame.Surface((32, 32), flags = pygame.SRCALPHA)
+        sprite.blit(self.spritesheet, (0, 0), (spritesheetCol * 32, spritesheetRow * 32, 32, 32))
+        # Scale and render the sprite
+        spriteScaled = pygame.transform.scale(sprite, (sizeRender, sizeRender))
+        screen.blit(spriteScaled, (xRender, yRender))
     # Reset the move to position at the start of each turn, and upon load
     def resetMoveToPos(self):
         self.moveTo = self.pos
@@ -113,15 +131,13 @@ class AGENT:
         self.HP = min(self.maxHP, max(0, self.HP - amount))
 # Enemy Class: Class representing an enemy.
 class ENEMY(AGENT):
-    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos):
-        super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos)
-        self.color = pygame.Color(255,0,0)
+    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName):
+        super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName)
 # Player Class: Class representing a player character. NOTE: Medic does NOT use this class, instead uses a child class of player
 class PLAYER(AGENT):
-    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos):
-        super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos)
+    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName):
+        super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName)
         self.playerTurn = False
-        self.color = pygame.Color(0,255,0)
     # Start turn by finding all possible locations to move to
     def startTurn(self, env):
         self.getMoveableLocations(env)
@@ -139,8 +155,8 @@ class PLAYER(AGENT):
     # Set move to location to where the player clicked IF POSSIBLE
 # Medic Class: Subclass of Player, to override attack to be a heal
 class MEDIC(PLAYER):
-    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos):
-        super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos)
+    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName):
+        super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName)
     def attack(self, players):
         for player in players:
             playerPos, _ = player.getPositions
