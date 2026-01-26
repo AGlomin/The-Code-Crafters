@@ -14,10 +14,10 @@ def validate_event(event):
     if event.payload is None:
         errors.append("missing payload")
 
-    #if event.event_type == "move" or event.event_type == "character_move":
-    #    if "character_id" not in event.payload or "from_tile" not in event.payload or "to_tile" not in event.payload:
-    #        errors.append("move event missing fields")
+   
     #continued
+    #character move etc will be added in forward times (sprint2)
 
     return errors
+
 
