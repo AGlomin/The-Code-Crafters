@@ -1,20 +1,37 @@
-from telemetry.events import TelemetryEvent
-from telemetry.validator import validate_event, TelemetryValidationError
-from telemetry.storage import write_event
+import csv
+import os
+
+FILE_PATH = "telemetry/telemetry.csv"
+FIELDS = [
+    "timestamp",
+    "event_type",
+    "stage_id",
+    "session_id",
+    "user_id",
+    "payload",
+    "data_quality_flags",
+]
 
 
-def log_event(event_type: str, stage_id: int, payload: dict):
-    event = TelemetryEvent.create(
-        event_type=event_type,
-        stage_id=stage_id,
-        payload=payload
-    )
+def write_event(event):
+    file_exists = os.path.isfile(FILE_PATH)
 
-    try:
-        validate_event(event)
-        write_event(event)
-    except TelemetryValidationError as e:
-        print(f"[Telemetry Error] {e}")
+    with open(FILE_PATH, mode="a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=FIELDS)
+
+        if not file_exists:
+            writer.writeheader()
+
+        writer.writerow({
+            "timestamp": event.timestamp,
+            "event_type": event.event_type,
+            "stage_id": event.stage_id,
+            "session_id": event.session_id,
+            "user_id": event.user_id,
+            "payload": event.payload,
+            "data_quality_flags": event.data_quality_flags,
+        })
+
 
 #how to use in mainplay:
 """
