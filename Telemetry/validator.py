@@ -16,8 +16,9 @@ def validate_event(event):
 
    
     #continued
-    #character move etc will be added in forward times (sprint2)
+    #character move, attack etc will be added in forward times 
 
     return errors
+
 
 
