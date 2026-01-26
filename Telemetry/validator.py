@@ -11,6 +11,8 @@ def validate_event(event):
         errors.append("missing session_id")
     if not event.timestamp:
         errors.append("missing timestamp")
+    if event.payload is None:
+        errors.append("missing payload")
 
     #if event.event_type == "move" or event.event_type == "character_move":
     #    if "character_id" not in event.payload or "from_tile" not in event.payload or "to_tile" not in event.payload:
@@ -18,3 +20,4 @@ def validate_event(event):
     #continued
 
     return errors
+
