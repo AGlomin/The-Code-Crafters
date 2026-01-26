@@ -11,7 +11,7 @@ class TelemetryEvent:
     user_id: str
     timestamp: float
     payload: Dict[str, Any] = field(default_factory = dict)
-    @staticmethon
+    @staticmethod
     def create(event_type: str, stage_ig: int, payload: Dict[str, Any]):
         return TelemetryEvent(
             event_type=event_type,
