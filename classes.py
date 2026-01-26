@@ -95,11 +95,17 @@ class AGENT:
         if changed:
             return self.floodFill(fillFor, flooded, env)
         return flooded
-    # Find all moveable locations, given the size of the grid, an array of all players, and an array of all enemies
-    def getMoveableLocations(self, gridWidth, gridHeight, playerAgents, enemyAgents):
+    # Find all open tiles
+    def getOpenTiles(self, gridWidth, gridHeight, obstacles, playerAgents, enemyAgents):
         baseArea = [[-1 for col in gridWidth] for row in gridHeight]
         baseArea[round(self.pos.y)][round(self.pos.x)] = 0
         env = [[True for col in gridWidth] for row in gridHeight]
+        """
+        for obstacle in obstacles:
+            obstaclePos = obstacle.getPosition()
+            obstacleRow, obstacleCol = obstaclePos.y, obstaclePos.x
+            env[obstacleRow][obstacleCol] = False
+        """
         # Update the environment for player agents, to prevent overlaps
         for player in playerAgents:
             playerPos, playerMoveToPos = player.getPositions()
@@ -116,6 +122,10 @@ class AGENT:
                 continue
             env[round(enemyPos.y)][round(enemyPos.x)] = False
             env[round(enemyMoveToPos.y)][round(enemyMoveToPos.x)] = False
+        return baseArea, env
+    # Find all moveable locations, given the size of the grid, an array of all players, and an array of all enemies
+    def getMoveableLocations(self, gridWidth, gridHeight, obstacles, playerAgents, enemyAgents):
+        baseArea, env = self.getOpenTiles(gridWidth, gridHeight, obstacles, playerAgents, enemyAgents)
         self.moveableLocations = self.floodFill(0, baseArea, env)
     # Returns the current and move to positions
     def getPositions(self):
@@ -123,7 +133,7 @@ class AGENT:
     # Attack all agents within range
     def attack(self, agents):
         for agent in agents:
-            agentPos, _ = agent.getPositions
+            agentPos, _ = agent.getPositions()
             if self.pos.distance_to(agentPos) <= self.atkRange:
                 agent.loseHP(self.atk)
     def loseHP(self, amount):
@@ -133,6 +143,30 @@ class AGENT:
 class ENEMY(AGENT):
     def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName):
         super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName)
+    def findOptimalMoveLocation(self, gridWidth, gridHeight, obstacles, playerAgents, enemyAgents):
+        self.getMoveableLocations(gridWidth, gridHeight, obstacles, playerAgents, enemyAgents)
+        playerPositions = []
+        for player in playerAgents:
+            playerPos, _ = player.getPositions()
+            playerPositions.append(playerPos)
+        # First find area within movement range with the maximum players within range
+        maxInRange = 0
+        maxPos = pygame.math.Vector2((0,0))
+        for rowI in range(len(self.moveableLocations)):
+            for colI in range(len(self.moveableLocations[rowI])):
+                testPos = pygame.math.Vector2((colI, rowI))
+                testInRange = 0
+                for playerPosition in playerPositions:
+                    if testPos.distance_to(playerPosition) <= self.atkRange:
+                        testInRange += 1
+                if testInRange > maxInRange or (testInRange == maxInRange and testPos.distance_to(self.pos) < maxPos.distance_to(self.pos)):
+                    maxInRange = testInRange
+                    maxPos.update(testPos)
+        if maxInRange > 0:
+            self.moveTo.update(maxPos)
+            return
+        # If there are no targets in range, move towards the closest target.
+        # TODO: WORK OUT HOW TO IMPLEMENT THIS
 # Player Class: Class representing a player character. NOTE: Medic does NOT use this class, instead uses a child class of player
 class PLAYER(AGENT):
     def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName):
@@ -160,5 +194,6 @@ class MEDIC(PLAYER):
     def attack(self, players):
         for player in players:
             playerPos, _ = player.getPositions
-            if self.pos.distance_to(playerPos) <= self.atkRange:
+            distToPlayer = self.pos.distance_to(playerPos)
+            if distToPlayer <= self.atkRange and distToPlayer != 0: # If distance is 0, then this is the healer, so can skip
                 player.loseHP(-1 * self.atk) # Multiply by -1 meaning that the player will GAIN hp
