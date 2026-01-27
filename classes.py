@@ -1,5 +1,5 @@
 import pygame
-
+import math as m
 # Tile Class: Stores size, row, column, x, y and picture
 class TILE:
     def __init__(self, size, row, col, x, y, imgLocation):
@@ -55,10 +55,17 @@ class AGENT:
             self.spritesheet = pygame.Surface((32, 32))
             pygame.draw.rect(self.spritesheet, pygame.Color(255, 0, 255), (0, 0, 16, 16))
             pygame.draw.rect(self.spritesheet, pygame.Color(255, 0, 255), (16, 16, 16, 16))
-    def render(self, screen, tiles):
+        try:
+            self.hpBar = pygame.image.load("assets/HPBar.png")
+        except:
+            self.hpBar = None
+    def getRenderPosAndSize(self, tiles):
         tile = tiles[round(self.pos.y)][round(self.pos.x)]
         xRender, yRender = tile.getPosition()
         sizeRender = tile.getSize()
+        return xRender, yRender, sizeRender
+    def render(self, screen, tiles):
+        xRender, yRender, sizeRender = self.getRenderPosAndSize(tiles)
         # For now, use a single sprite (found at row 0, column 0 in sprite sheet)
         spritesheetRow = 0
         spritesheetCol = 0
@@ -68,6 +75,31 @@ class AGENT:
         # Scale and render the sprite
         spriteScaled = pygame.transform.scale(sprite, (sizeRender, sizeRender))
         screen.blit(spriteScaled, (xRender, yRender))
+    def renderHP(self, screen, tiles):
+        # Only run if the HP bar was successfully loaded
+        if self.hpBar == None:
+            return
+        xRender, yRender, sizeRender = self.getRenderPosAndSize(tiles)
+        hpPercentage = self.HP / self.maxHP
+        hpColor = 2 * hpPercentage
+        if hpColor > 1:
+            hpColor -= 1
+            hpBarColor = pygame.Color(255, 255, 0).lerp(pygame.Color(0,255,0), hpColor)
+        else:
+            hpBarColor = pygame.Color(255, 0, 0).lerp(pygame.Color(255,255,0), hpColor)
+        # Base pixels for the rectangle
+        hpBarBaseWidth = 28
+        hpBarBaseHeight = 4
+        hpBarBaseTop = 26
+        hpBarBaseLeft = 2
+        hpImgOffset = m.ceil(12 * sizeRender / 32)
+        hpRectTop = m.ceil(hpBarBaseTop * sizeRender / 32) + yRender
+        hpRectLeft = m.ceil(hpBarBaseLeft * sizeRender / 32) + xRender
+        hpRectWidth = m.ceil(hpBarBaseWidth * sizeRender * hpPercentage / 32)
+        hpRectHeight = m.ceil(hpBarBaseHeight * sizeRender / 32)
+        pygame.draw.rect(screen, hpBarColor, (hpRectLeft, hpRectTop, hpRectWidth, hpRectHeight))
+        hpScaled = pygame.transform.scale(self.hpBar, (sizeRender, sizeRender))
+        screen.blit(hpScaled, (xRender, yRender + hpImgOffset))
     # Reset the move to position at the start of each turn, and upon load
     def resetMoveToPos(self):
         self.moveTo = self.pos

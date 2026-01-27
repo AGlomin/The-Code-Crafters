@@ -1,5 +1,5 @@
 import pygame
-import math
+import math as m
 import classes as c
 pygame.init()
 
@@ -8,7 +8,7 @@ def findSize(screen, rows, cols):
     screenWidth = screen.get_width()
     screenHeight = screen.get_height()
     size = min(screenHeight/rows, screenWidth/cols)
-    return math.floor(size/2) * 2 # to allow for tiles to have an even size, needed for centering
+    return m.floor(size/2) * 2 # to allow for tiles to have an even size, needed for centering
 # Creates or updates the screen, to allow for fullscreen
 def createScreen(width, height, fullscreen = False):
     if fullscreen:
@@ -86,6 +86,13 @@ while running:
     # Render enemy agents
     for enemy in enemies:
         enemy.render(screen, tiles)
+    # HP Rendered after everything else rendered, to allow it to be shown on top of everything else
+    # Render HP of all player agents
+    for player in players:
+        player.renderHP(screen, tiles)
+    # Render HP of all enemy agents
+    for enemy in enemies:
+        enemy.renderHP(screen, tiles)
     pygame.display.flip()
     # Update time and frame
     dt = clock.tick(30)
