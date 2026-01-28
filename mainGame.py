@@ -21,13 +21,13 @@ def getPlayerAndEnemyInformation():
     playerInformation = []
     enemyInformation = []
     df = pd.read_csv("agent_information.csv")
-    for row in df.iterrow():
-        if row['char_label'] == 'medic':
-            playerInformation.append(c.MEDIC(row['health_points'], row['base_attack'], row['attack_range'], row['move_speed'], pygame.math.Vector2(0, 0), f"{row['char_label']}Proto"))
-        elif row['player_agent']:
-            playerInformation.append(c.PLAYER(row['health_points'], row['base_attack'], row['attack_range'], row['move_speed'], pygame.math.Vector2(0, 0), f"{row['char_label']}Proto"))
+    for row in df.itertuples():
+        if row.char_label == 'medic':
+            playerInformation.append(c.MEDIC(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto"))
+        elif row.player_agent:
+            playerInformation.append(c.PLAYER(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto"))
         else:
-            enemyInformation.append(c.ENEMY(row['health_points'], row['base_attack'], row['attack_range'], row['move_speed'], pygame.math.Vector2(0, 0), f"{row['char_label']}Proto"))
+            enemyInformation.append(c.ENEMY(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto"))
     return playerInformation, enemyInformation
 # Get monitor size
 monitorInfo = pygame.display.Info()
@@ -48,7 +48,7 @@ top = (screenHeight - (size * rows)) // 2
 left = (screenWidth - (size * cols)) // 2
 tiles = [[c.TILE(size, row, col, left + (col * size), top + (row * size), "tile") for col in range(cols)] for row in range(rows)]
 # Get player and enemy information
-playerInfo, enemyInfo = getPlayerAndEnemyInformation
+playerInfo, enemyInfo = getPlayerAndEnemyInformation()
 # Temporary: Assign each player a set position, PLAYER COPYING IS NEEDED STILL
 players = []
 rowPlace = 0
