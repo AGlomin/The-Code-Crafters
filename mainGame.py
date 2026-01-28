@@ -1,6 +1,7 @@
 import pygame
 import math as m
 import classes as c
+import pandas as pd
 pygame.init()
 
 # function to find the size of a tile, given the number of rows, columns, and size of the screen
@@ -16,6 +17,18 @@ def createScreen(width, height, fullscreen = False):
     else:
         screen = pygame.display.set_mode((width, height), flags=pygame.RESIZABLE)
     return screen
+def getPlayerAndEnemyInformation():
+    playerInformation = []
+    enemyInformation = []
+    df = pd.read_csv("agent_information.csv")
+    for row in df.iterrow():
+        if row['char_label'] == 'medic':
+            playerInformation.append(c.MEDIC(row['health_points'], row['base_attack'], row['attack_range'], row['move_speed'], pygame.math.Vector2(0, 0), f"{row['char_label']}Proto"))
+        elif row['player_agent']:
+            playerInformation.append(c.PLAYER(row['health_points'], row['base_attack'], row['attack_range'], row['move_speed'], pygame.math.Vector2(0, 0), f"{row['char_label']}Proto"))
+        else:
+            enemyInformation.append(c.ENEMY(row['health_points'], row['base_attack'], row['attack_range'], row['move_speed'], pygame.math.Vector2(0, 0), f"{row['char_label']}Proto"))
+    return playerInformation, enemyInformation
 # Get monitor size
 monitorInfo = pygame.display.Info()
 monitorWidth, monitorHeight = monitorInfo.current_w, monitorInfo.current_h
@@ -34,11 +47,18 @@ size = findSize(screen, rows, cols)
 top = (screenHeight - (size * rows)) // 2
 left = (screenWidth - (size * cols)) // 2
 tiles = [[c.TILE(size, row, col, left + (col * size), top + (row * size), "tile") for col in range(cols)] for row in range(rows)]
-# Temporary: Initialise player and enemy, for testing of rendering
-playerTitles = ["brawler", "bomber", "medic"]
-enemyTitles = [f"en{i}" for i in range(3)]
-players = [c.PLAYER(1, 1, 1, 1, pygame.math.Vector2(0, i), f"{playerTitles[i]}Proto") for i in range(3)]
-enemies = [c.ENEMY(1, 1, 1, 1, pygame.math.Vector2(cols - 1, i + 1), f"en{enemyTitles[i]}") for i in range(3)]
+# Get player and enemy information
+playerInfo, enemyInfo = getPlayerAndEnemyInformation
+# Temporary: Assign each player a set position, PLAYER COPYING IS NEEDED STILL
+players = []
+rowPlace = 0
+for player in playerInfo:
+    playerForLevel = player.copySelf()
+    playerForLevel.updatePosition(pygame.math.Vector2(0, rowPlace))
+    players.append(playerForLevel)
+    rowPlace += 1
+# Initialise enemies as nothing, as no enemy agent information yet. This will eventually be loaded from the level information
+enemies = []
 # Time
 clock = pygame.time.Clock()
 dt = 0

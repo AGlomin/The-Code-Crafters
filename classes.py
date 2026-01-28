@@ -48,6 +48,7 @@ class AGENT:
         # Pos is given as a vect2, where the x corresponds to the column, and the y corresponds to the row
         self.pos = pos
         self.resetMoveToPos()
+        self.spritesheetName = spritesheetName
         try:
             self.spritesheet = pygame.image.load(f"assets/{spritesheetName}.png")
         except:
@@ -59,11 +60,16 @@ class AGENT:
             self.hpBar = pygame.image.load("assets/HPBar.png")
         except:
             self.hpBar = None
+    # Create a copy of the agent, keeping its class
+    def copySelf(self):
+        return type(self)(self.maxHP, self.baseAtk, self.atkRange, self.moveSpeed, self.pos, self.spritesheetName)
+    # Get the position and size of the agent, depending on its position and tile size
     def getRenderPosAndSize(self, tiles):
         tile = tiles[round(self.pos.y)][round(self.pos.x)]
         xRender, yRender = tile.getPosition()
         sizeRender = tile.getSize()
         return xRender, yRender, sizeRender
+    # Render the agent
     def render(self, screen, tiles):
         xRender, yRender, sizeRender = self.getRenderPosAndSize(tiles)
         # For now, use a single sprite (found at row 0, column 0 in sprite sheet)
@@ -75,6 +81,7 @@ class AGENT:
         # Scale and render the sprite
         spriteScaled = pygame.transform.scale(sprite, (sizeRender, sizeRender))
         screen.blit(spriteScaled, (xRender, yRender))
+    # Render the HP bar of the agent
     def renderHP(self, screen, tiles):
         # Only run if the HP bar was successfully loaded
         if self.hpBar == None:
@@ -103,6 +110,10 @@ class AGENT:
     # Reset the move to position at the start of each turn, and upon load
     def resetMoveToPos(self):
         self.moveTo = self.pos
+    # Reset the position of the agent
+    def updatePosition(self, pos):
+        self.pos.update(pos)
+        self.moveTo.update(pos)
     # Flood Fill: Used for finding all possible spaces an agent can move to
     def floodFill(self, searchFor, flooded, env):
         if self.moveSpeed == searchFor:
