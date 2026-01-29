@@ -5,7 +5,7 @@ EVENT_TYPES = {
 
     #stage lifecycle
     "stage_start",
-    "stage_comple",
+    "stage_complete",
     "stage_fail",
     "stage_retry",
 
