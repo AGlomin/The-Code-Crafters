@@ -1,6 +1,6 @@
-from telemetry.event import TelemetryEvent
-from telemetry.validator import validate_event, detect_anomalies, TelemetryValidationError
-from telemetry.storage import write_event
+from Telemetry.event import TelemetryEvent
+from Telemetry.validator import validate_event, detect_anomalies, TelemetryValidationError
+from Telemetry.storage import write_event
 
 def log_event(event_type: str, stage_id: int, payload: dict):
 
@@ -20,5 +20,6 @@ def log_event(event_type: str, stage_id: int, payload: dict):
 
 
     write_event(event)
+
 
 
