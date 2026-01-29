@@ -21,3 +21,4 @@ def log_event(event_type: str, stage_id: int, payload: dict):
 
     write_event(event)
 
+
