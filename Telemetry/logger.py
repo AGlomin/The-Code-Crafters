@@ -13,7 +13,6 @@ def log_event(event_type: str, stage_id: int, payload: dict):
     try:
         validate_event(event)
     except TelemetryValidationError as e:
-        # Sprint 1 için: sadece logla, crash etme
         print(f"[Telemetry Validation Error] {e}")
         return
       
@@ -21,3 +20,4 @@ def log_event(event_type: str, stage_id: int, payload: dict):
 
 
     write_event(event)
+
