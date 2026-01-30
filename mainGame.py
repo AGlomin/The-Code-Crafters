@@ -2,6 +2,9 @@ import pygame
 import math as m
 import classes as c
 import pandas as pd
+import time
+import uuid
+from Telemetry.logger import log_event
 pygame.init()
 
 # function to find the size of a tile, given the number of rows, columns, and size of the screen
@@ -59,6 +62,24 @@ for player in playerInfo:
     rowPlace += 1
 # Initialise enemies as nothing, as no enemy agent information yet. This will eventually be loaded from the level information
 enemies = []
+#stage identifier
+stage_id = 1
+
+#turn-based state
+turn_number = 1
+active_side = "player"
+stage_running = True
+#optional stage metric (we can expand later)
+total_damage taken = 0
+
+#emit session
+log_event("session_start", stage_id"{"configuration_id": "balanced", "difficulty_label":"balanced"})
+
+#stage start events
+log_event("stage_start", stage_id, {"enemy_count": len(enemies), "grid_size": f"{rows}x{cols}"})
+
+log_event( "turn_start", stage_id,{"turn_number": turn_number, "active_side": active_side})
+
 # Time
 clock = pygame.time.Clock()
 dt = 0
@@ -117,4 +138,5 @@ while running:
     # Update time and frame
     dt = clock.tick(30)
     frame = (frame + 1) % framesPerCycle
+
 pygame.quit()
