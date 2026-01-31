@@ -51,3 +51,4 @@ def test_stage_id_wrong_type():
 def test_payload_wrong_type():
     with pytest.raises(TypeError):
         TelemetryEvent.create("event", 1, "not_a_dict")
+#commit 
