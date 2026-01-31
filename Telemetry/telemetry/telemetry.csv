@@ -1,0 +1,5 @@
+timestamp,event_type,stage_id,session_id,user_id,payload,data_quality_flags
+1769862204.9935966,session_start,0,f2c62947-cc81-48a3-851f-f2ed5ca830fe,anon_user,{'difficulty': 'balanced'},[]
+1769862204.9937744,stage_start,1,f3d75d01-7f9a-496f-bf09-0365976ec0b3,anon_user,{},[]
+1769862204.9938593,character_attack,1,6d804d04-322d-411a-a75d-50e4da6c6154,anon_user,"{'attacker_id': 'player_1', 'target_id': 'enemy_1', 'damage': 3}",[]
+1769862204.9939318,stage_complete,1,950076ee-8766-4f3c-b6a1-7a091abeb735,anon_user,{'turns_taken': 5},[]

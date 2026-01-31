@@ -36,9 +36,7 @@ def validate_event(event):
 
 
 def detect_anomalies(event):
-    """
-    Soft checks — DO NOT block storage
-    """
+
     if event.event_type == "stage_complete":
         if event.payload.get("turns_taken", 0) < 1:
             event.data_quality_flags.append("instant_completion")
