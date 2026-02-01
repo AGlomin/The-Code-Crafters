@@ -1,5 +1,13 @@
-from telemetry.event_types import EVENT_TYPES
-
+# Ran directly from source
+try:
+    from event_types import EVENT_TYPES
+except:
+    # Ran from mini_test
+    try:
+        from telemetry.event_types import EVENT_TYPES
+    # Ran from game
+    except:
+        from Telemetry.telemetry.event_types import EVENT_TYPES
 
 class TelemetryValidationError(Exception):
     pass

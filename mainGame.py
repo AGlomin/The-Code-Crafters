@@ -4,7 +4,7 @@ import classes as c
 import pandas as pd
 import time
 import uuid
-from Telemetry.logger import log_event
+from Telemetry.telemetry.logger import log_event
 pygame.init()
 
 # function to find the size of a tile, given the number of rows, columns, and size of the screen
