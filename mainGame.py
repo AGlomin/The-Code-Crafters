@@ -178,6 +178,7 @@ while running:
             
         #TEMP: fullscreen adjustment
         if event.type == pygame.KEYUP:
+            
             # debugger: press W to force win (sets all enemies HP to 0)
             if event.key == pygame.K_w and stage_running:
                 for enemy in enemies:
@@ -185,16 +186,16 @@ while running:
                         enemy.health_points = 0
                     elif hasattr(enemy, "hp"):
                         enemy.hp = 0
-                        if event.key == pygame.K_f:
-                            fullscreen = not(fullscreen)
-                            if fullscreen:
-                                oldWidth = screenWidth
-                                oldHeight = screenHeight
-                                screen = createScreen(monitorWidth, monitorHeight, fullscreen)
-                            else:
-                                screen = createScreen(oldWidth, oldHeight, fullscreen)
-                            size = findSize(screen, rows, cols)
-                            updateSize = True
+            if event.key == pygame.K_f:
+                fullscreen = not(fullscreen)
+                if fullscreen:
+                    oldWidth = screenWidth
+                    oldHeight = screenHeight
+                    screen = createScreen(monitorWidth, monitorHeight, fullscreen)
+                else:
+                    screen = createScreen(oldWidth, oldHeight, fullscreen)
+                size = findSize(screen, rows, cols)
+                updateSize = True
             #advance turn by pressing SPACEBAR
             if event.key == pygame.K_SPACE and stage_running:
                 advance_turn()
@@ -300,4 +301,5 @@ while running:
     frame = (frame + 1) % framesPerCycle
 
 pygame.quit()
+
 
