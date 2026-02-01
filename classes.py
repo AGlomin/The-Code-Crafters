@@ -38,7 +38,7 @@ class TILE:
         return -1, -1
 # Parent Class: Agent, used as a base for both the player and enemy class
 class AGENT:
-    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName):
+    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label):
         self.maxHP = maxHP
         self.HP = maxHP
         self.baseAtk = baseAtk
@@ -60,9 +60,13 @@ class AGENT:
             self.hpBar = pygame.image.load("assets/HPBar.png")
         except:
             self.hpBar = None
+        self.label = label
+    # Returns true if the label is the same as own label, else returns false
+    def checkLabel(self, label):
+        return label == self.label
     # Create a copy of the agent, keeping its class
     def copySelf(self):
-        return type(self)(self.maxHP, self.baseAtk, self.atkRange, self.moveSpeed, self.pos, self.spritesheetName)
+        return type(self)(self.maxHP, self.baseAtk, self.atkRange, self.moveSpeed, self.pos, self.spritesheetName, self.label)
     # Get the position and size of the agent, depending on its position and tile size
     def getRenderPosAndSize(self, tiles):
         tile = tiles[round(self.pos.y)][round(self.pos.x)]
@@ -187,8 +191,8 @@ class AGENT:
         return 1 if self.HP > 0 else 0
 # Enemy Class: Class representing an enemy.
 class ENEMY(AGENT):
-    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName):
-        super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName)
+    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label):
+        super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label)
     def findOptimalMoveLocation(self, gridWidth, gridHeight, obstacles, playerAgents, enemyAgents):
         self.getMoveableLocations(gridWidth, gridHeight, obstacles, playerAgents, enemyAgents)
         playerPositions = []
@@ -229,8 +233,8 @@ class ENEMY(AGENT):
         self.moveTo.update(closestPos)
 # Player Class: Class representing a player character. NOTE: Medic does NOT use this class, instead uses a child class of player
 class PLAYER(AGENT):
-    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName):
-        super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName)
+    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label):
+        super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label)
         self.playerTurn = False
     # Start turn by finding all possible locations to move to
     def startTurn(self, env):
@@ -249,8 +253,8 @@ class PLAYER(AGENT):
     # Set move to location to where the player clicked IF POSSIBLE
 # Medic Class: Subclass of Player, to override attack to be a heal
 class MEDIC(PLAYER):
-    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName):
-        super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName)
+    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label):
+        super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label)
     def attack(self, players):
         for player in players:
             playerPos, _ = player.getPositions

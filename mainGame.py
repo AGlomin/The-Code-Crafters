@@ -2,6 +2,7 @@ import pygame
 import math as m
 import classes as c
 import pandas as pd
+import LevelHandler
 import time
 import uuid
 from Telemetry.telemetry.logger import log_event
@@ -26,12 +27,25 @@ def getPlayerAndEnemyInformation():
     df = pd.read_csv("agent_information.csv")
     for row in df.itertuples():
         if row.char_label == 'medic':
-            playerInformation.append(c.MEDIC(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto"))
+            playerInformation.append(c.MEDIC(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label))
         elif row.player_agent:
-            playerInformation.append(c.PLAYER(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto"))
+            playerInformation.append(c.PLAYER(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label))
         else:
-            enemyInformation.append(c.ENEMY(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto"))
+            enemyInformation.append(c.ENEMY(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label))
     return playerInformation, enemyInformation
+def loadEnemies(enemyInfo, stageEnemies):
+    enemies = []
+    for enemyLoad in stageEnemies:
+        enemyLabel = enemyLoad[0]
+        enemyRow = enemyLoad[1]
+        enemyCol = enemyLoad[2]
+        for enemyCheck in enemyInfo:
+            if enemyCheck.checkLabel(enemyLabel):
+                e = enemyCheck.copySelf()
+                e.updatePosition(pygame.math.Vector2(enemyCol, enemyRow))
+                enemies.append(e)
+                break
+    return enemies
 # Get monitor size
 monitorInfo = pygame.display.Info()
 monitorWidth, monitorHeight = monitorInfo.current_w, monitorInfo.current_h
@@ -44,8 +58,12 @@ fullscreen = False
 oldWidth = screenWidth
 oldHeight = screenHeight
 # Initialise the grid, temporarily has a set size.
+"""
 rows = 4
 cols = 5
+"""
+rows, cols, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol, obstaclePlaces, stages = LevelHandler.loadLevel("levels/levelTest.txt")
+playerPlaces = [[brawlerRow, brawlerCol], [bomberRow, bomberCol], [medicRow, medicCol]]
 size = findSize(screen, rows, cols)
 top = (screenHeight - (size * rows)) // 2
 left = (screenWidth - (size * cols)) // 2
@@ -57,13 +75,13 @@ players = []
 rowPlace = 0
 for player in playerInfo:
     playerForLevel = player.copySelf()
-    playerForLevel.updatePosition(pygame.math.Vector2(0, rowPlace))
+    playerForLevel.updatePosition(pygame.math.Vector2(playerPlaces[rowPlace][1], playerPlaces[rowPlace][0]))
     players.append(playerForLevel)
     rowPlace += 1
 # Initialise enemies as nothing, as no enemy agent information yet. This will eventually be loaded from the level information
-enemies = []
-#add 1 enemy so stage_completes can trigger
-if len(enemyInfo) > 0:
+enemies = loadEnemies(enemyInfo, stages[0])
+#add 1 enemy if there are no enemies already so stage_completes can trigger
+if len(enemies) == 0 and len(enemyInfo) > 0:
     e = enemyInfo[0].copySelf()
     e.updatePosition(pygame.math.Vector2(cols - 1, 0))
     enemies.append(e)
