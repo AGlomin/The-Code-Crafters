@@ -147,6 +147,50 @@ def advance_turn():
     else:
         active_side = "player"
         turn_number += 1
+
+def damage_agent(agent, amount):
+    #reducing hp
+    if hasattr(agent, "health_points"):
+        agent.health_points = max(0, agent.health_points - amount)
+    elif hasattr(agent, "hp"):
+        agent.hp = max(0, agent.hp - amount)
+
+def player_attack():
+    if len(enemies) == 0 or len(players) == 0:
+        return
+    attacker = players[0]
+    target = enemies[0]
+    damage = 10
+    damage_agent(target, damage)
+    log_event(
+        "character_attack",
+        stage_id,
+        {
+            "attacker_id": getattr(attacker, "name", "player_0"),
+            "target_id": getattr(target, "name", "enemy_0"),
+            "damage": damage,
+            "attack_range": getattr(attacker, "attack_range", 1)
+        }
+    )
+
+def enemy_attack():
+    global total_damage_taken
+    if len(enemies) == 0 or len(players) == 0:
+        return
+    enemy = enemies[0]
+    target = players[0]
+    damage = 5
+    damage_agent(target, damage)
+    total_damage_taken += damage
+    log_event(
+        "enemy_attack",
+        stage_id,
+        {
+            "enemy_id": getattr(enemy, "name", "enemy_0"),
+            "target_id": getattr(target, "name", "player_0"),
+            "damage": damage
+        }
+    )
         
 #Time
 clock = pygame.time.Clock()
@@ -196,6 +240,7 @@ while running:
             
         #TEMP: fullscreen adjustment
         if event.type == pygame.KEYUP:
+            
             # debugger: press W to force win (sets all enemies HP to 0)
             if event.key == pygame.K_w and stage_running:
                 for enemy in enemies:
@@ -203,16 +248,16 @@ while running:
                         enemy.health_points = 0
                     elif hasattr(enemy, "hp"):
                         enemy.hp = 0
-                        if event.key == pygame.K_f:
-                            fullscreen = not(fullscreen)
-                            if fullscreen:
-                                oldWidth = screenWidth
-                                oldHeight = screenHeight
-                                screen = createScreen(monitorWidth, monitorHeight, fullscreen)
-                            else:
-                                screen = createScreen(oldWidth, oldHeight, fullscreen)
-                            size = findSize(screen, rows, cols)
-                            updateSize = True
+            if event.key == pygame.K_f:
+                fullscreen = not(fullscreen)
+                if fullscreen:
+                    oldWidth = screenWidth
+                    oldHeight = screenHeight
+                    screen = createScreen(monitorWidth, monitorHeight, fullscreen)
+                else:
+                    screen = createScreen(oldWidth, oldHeight, fullscreen)
+                size = findSize(screen, rows, cols)
+                updateSize = True
             #advance turn by pressing SPACEBAR
             if event.key == pygame.K_SPACE and stage_running:
                 advance_turn()
@@ -250,6 +295,13 @@ while running:
                     }
                 )
                 running = False
+            #player attacks (press A), only on player turn
+            if event.key == pygame.K_a and stage_running and active_side == "player":
+                player_attack()
+            
+            #enemy attacks (press E), only on enemy turn
+            if event.key == pygame.K_e and stage_running and active_side == "enemy":
+                enemy_attack()
     # Display
     screen.fill("white")
     # Render tiles
@@ -318,4 +370,6 @@ while running:
     frame = (frame + 1) % framesPerCycle
 
 pygame.quit()
+
+
 
