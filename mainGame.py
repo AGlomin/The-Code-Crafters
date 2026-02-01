@@ -68,6 +68,7 @@ size = findSize(screen, rows, cols)
 top = (screenHeight - (size * rows)) // 2
 left = (screenWidth - (size * cols)) // 2
 tiles = [[c.TILE(size, row, col, left + (col * size), top + (row * size), "tile") for col in range(cols)] for row in range(rows)]
+obstacles = [c.OBSTACLE(pygame.math.Vector2(obstacle[1], obstacle[0]), "obstacle") for obstacle in obstaclePlaces]
 # Get player and enemy information
 playerInfo, enemyInfo = getPlayerAndEnemyInformation()
 # Temporary: Assign each player a set position, PLAYER COPYING IS NEEDED STILL
@@ -185,7 +186,7 @@ def logAttack(agent, isPlayer, targets):
                 stage_id,
                 {
                     "attacker_id": agentLabel,
-                    "target_id": target.getLabel(),
+                    "target_id": target,
                     "damage": agentDamage,
                     "attack_range": agentRange
                 }
@@ -196,7 +197,7 @@ def logAttack(agent, isPlayer, targets):
                 stage_id,
                 {
                     "enemy_id": agentLabel,
-                    "target_id": target.getLabel(),
+                    "target_id": target,
                     "damage": agentDamage
                 }
             )
@@ -227,7 +228,8 @@ frame = 0
 
 #Frames per cycle: number of frames per animation cycle
 framesPerCycle = 8
-
+animating = False
+animatingMove = False
 #game loop
 running = True
 while running:
@@ -272,10 +274,7 @@ while running:
             # debugger: press W to force win (sets all enemies HP to 0)
             if event.key == pygame.K_w and stage_running:
                 for enemy in enemies:
-                    if hasattr(enemy, "health_points"):
-                        enemy.health_points = 0
-                    elif hasattr(enemy, "hp"):
-                        enemy.hp = 0
+                    enemy.setHP(0)
             if event.key == pygame.K_f:
                 fullscreen = not(fullscreen)
                 if fullscreen:
@@ -286,8 +285,11 @@ while running:
                     screen = createScreen(oldWidth, oldHeight, fullscreen)
                 size = findSize(screen, rows, cols)
                 updateSize = True
-            #advance turn by pressing SPACEBAR
+            #advance turn by pressing SPACEBAR - will log turn advance after animation
             if event.key == pygame.K_SPACE and stage_running:
+                animating = True
+                animatingMove = True
+                """
                 advance_turn()
                 log_event(
                     "turn_start",
@@ -297,6 +299,7 @@ while running:
                         "active_side": active_side
                     }
                 )
+                """
             #quit mid-stage by pressing ESC
             if event.key == pygame.K_ESCAPE and stage_running:
                 stage_running = False
@@ -333,29 +336,40 @@ while running:
             if event.key == pygame.K_e and stage_running and active_side == "enemy":
                 enemy_attack()
             """
-    # Display
-    screen.fill("white")
-    # Render tiles
-    for row in tiles:
-        for col in row:
-            if updateSize:
-                col.updateSizeAndPos(size, screenWidth, screenHeight, rows, cols)
-            col.render(screen)
-    # Render player agents
-    for player in players:
-        player.render(screen, tiles)
-    # Render enemy agents
-    for enemy in enemies:
-        enemy.render(screen, tiles)
-    # HP Rendered after everything else rendered, to allow it to be shown on top of everything else
-    # Render HP of all player agents
-    for player in players:
-        player.renderHP(screen, tiles)
-    # Render HP of all enemy agents
-    for enemy in enemies:
-        enemy.renderHP(screen, tiles)
-    pygame.display.flip()
-    #stage-end conditions (succeed/fail)
+    # TODO: Deal with gameplay vvv
+    if animating:
+        animatingAgents = players if active_side == "player" else enemies
+        # Animate Movement
+        if animatingMove:
+            for agent in animatingAgents:
+                agent.updatePosition(agent.getMoveTo())
+            animatingMove = False
+        # Animate Attack
+        else:
+            for agent in animatingAgents:
+                if active_side == "player" and agent.getLabel() != "medic":
+                    targets = agent.attack(enemies)
+                    logAttack(agent, True, targets)
+                # This can be used for both medic and enemies, since it will cause medic to heal the other players
+                else:
+                    targets = agent.attack(players)
+                    logAttack(agent, agent.getLabel() == "medic", targets)
+            animating = False
+            advance_turn()
+            log_event(
+                "turn_start",
+                stage_id,
+                {
+                    "turn_number": turn_number,
+                    "active_side": active_side
+                }
+            )
+            if active_side == "enemy":
+                for enemy in enemies:
+                    enemy.findOptimalMoveLocation(cols, rows, obstacles, players, enemies)
+                animating = True
+                animatingMove = True
+    #stage-end conditions (succeed/fail) - Moved this up, better to deal with this before rendering, as it's technically part of the gameplay 🙂
     if stage_running:
         if stage_won(enemies):
             stage_running = False
@@ -396,6 +410,31 @@ while running:
             )
             running = False
 
+    # Display
+    screen.fill("white")
+    # Render tiles
+    for row in tiles:
+        for col in row:
+            if updateSize:
+                col.updateSizeAndPos(size, screenWidth, screenHeight, rows, cols)
+            col.render(screen)
+    # Render player agents
+    for player in players:
+        player.render(screen, tiles)
+    # Render enemy agents
+    for enemy in enemies:
+        enemy.render(screen, tiles)
+    # Render obstacles
+    for obstacle in obstacles:
+        obstacle.render(screen, tiles)
+    # HP Rendered after everything else rendered, to allow it to be shown on top of everything else
+    # Render HP of all player agents
+    for player in players:
+        player.renderHP(screen, tiles)
+    # Render HP of all enemy agents
+    for enemy in enemies:
+        enemy.renderHP(screen, tiles)
+    pygame.display.flip()
     # Update time and frame
     dt = clock.tick(30)
     frame = (frame + 1) % framesPerCycle

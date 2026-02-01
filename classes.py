@@ -36,6 +36,30 @@ class TILE:
         if (self.left <= mx and mx <= self.x + self.size) and (self.top <= my <= self.top + self.size):
             return self.row, self.col
         return -1, -1
+class OBSTACLE:
+    def __init__(self, pos, imgLocation):
+        self.pos = pos
+        try:
+            self.img = pygame.image.load(f"assets/{imgLocation}.png")
+        except:
+            # Use the default texture not found texture
+            self.img = pygame.Surface((32, 32))
+            pygame.draw.rect(self.img, pygame.Color(255, 0, 255), (0, 0, 16, 16))
+            pygame.draw.rect(self.img, pygame.Color(255, 0, 255), (16, 16, 16, 16))
+    # Get the position and size of the tile, depending on its position and tile size
+    def getRenderPosAndSize(self, tiles):
+        tile = tiles[round(self.pos.y)][round(self.pos.x)]
+        xRender, yRender = tile.getPosition()
+        sizeRender = tile.getSize()
+        return xRender, yRender, sizeRender
+    # Render the obstacle
+    def render(self, screen, tiles):
+        xRender, yRender, sizeRender = self.getRenderPosAndSize(tiles)
+        # Scale and render the sprite
+        spriteScaled = pygame.transform.scale(self.img, (sizeRender, sizeRender))
+        screen.blit(spriteScaled, (xRender, yRender))
+    def getPosition(self):
+        return self.pos
 # Parent Class: Agent, used as a base for both the player and enemy class
 class AGENT:
     def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label):
@@ -120,6 +144,9 @@ class AGENT:
     # Reset the move to position at the start of each turn, and upon load
     def resetMoveToPos(self):
         self.moveTo = self.pos
+    # Get position to move to - for testing, will eventually have animation
+    def getMoveTo(self):
+        return self.moveTo
     # Reset the position of the agent
     def updatePosition(self, pos):
         self.pos.update(pos)
@@ -139,7 +166,7 @@ class AGENT:
                     for scanChange in [[-1, 0], [0, -1], [0, 1], [1, 0]]:
                         rowChange, colChange = rowI + scanChange[0], colI + scanChange[1]
                         # check whether in range
-                        if 0 <= rowChange and rowChange < len(flooded) and 0<= colChange and colChange < len(col):
+                        if 0 <= rowChange and rowChange < len(flooded) and 0<= colChange and colChange < len(row):
                             # Check that the area is not flooded already, and that it can be moved to
                             if env[rowChange][colChange] and flooded[rowChange][colChange] == -1:
                                 flooded[rowChange][colChange] = fillFor
@@ -150,15 +177,13 @@ class AGENT:
         return flooded
     # Find all open tiles
     def getOpenTiles(self, gridWidth, gridHeight, obstacles, playerAgents, enemyAgents):
-        baseArea = [[-1 for col in gridWidth] for row in gridHeight]
+        baseArea = [[-1 for col in range(gridWidth)] for row in range(gridHeight)]
         baseArea[round(self.pos.y)][round(self.pos.x)] = 0
-        env = [[True for col in gridWidth] for row in gridHeight]
-        """
+        env = [[True for col in range(gridWidth)] for row in range(gridHeight)]
         for obstacle in obstacles:
             obstaclePos = obstacle.getPosition()
             obstacleRow, obstacleCol = obstaclePos.y, obstaclePos.x
-            env[obstacleRow][obstacleCol] = False
-        """
+            env[round(obstacleRow)][round(obstacleCol)] = False
         # Update the environment for player agents, to prevent overlaps
         for player in playerAgents:
             playerPos, playerMoveToPos = player.getPositions()
@@ -195,6 +220,8 @@ class AGENT:
     def loseHP(self, amount):
         # Always sets the HP to 0 as a minumum, and maxHP as a maximum
         self.HP = min(self.maxHP, max(0, self.HP - amount))
+    def setHP(self, amount):
+        self.HP = amount
     # Return 1 if the agent is alive, else 0
     def findAlive(self):
         return 1 if self.HP > 0 else 0
@@ -206,7 +233,7 @@ class ENEMY(AGENT):
         self.getMoveableLocations(gridWidth, gridHeight, obstacles, playerAgents, enemyAgents)
         playerPositions = []
         for player in playerAgents:
-            if player.findAlive == 1:
+            if player.findAlive() == 1:
                 playerPos, _ = player.getPositions()
                 playerPositions.append(playerPos)
         # Only run if all the players are alive
@@ -220,21 +247,22 @@ class ENEMY(AGENT):
         closestPos = pygame.math.Vector2((0,0))
         for rowI in range(len(self.moveableLocations)):
             for colI in range(len(self.moveableLocations[rowI])):
-                testPos = pygame.math.Vector2((colI, rowI))
-                testInRange = 0
-                testDist = 0
-                for playerPosition in playerPositions:
-                    distToPlayer = testPos.distance_to(playerPosition)
-                    testDist += distToPlayer
-                    if distToPlayer <= self.atkRange:
-                        testInRange += 1
-                if testInRange > maxInRange or (testInRange == maxInRange and testPos.distance_to(self.pos) < maxPos.distance_to(self.pos)):
-                    maxInRange = testInRange
-                    maxPos.update(testPos)
-                testDist /= len(playerPositions)
-                if testDist < closestDist or closestDist == -1:
-                    closestDist = testDist
-                    closestPos.update(testPos)
+                if self.moveableLocations[rowI][colI] != -1:
+                    testPos = pygame.math.Vector2((colI, rowI))
+                    testInRange = 0
+                    testDist = 0
+                    for playerPosition in playerPositions:
+                        distToPlayer = testPos.distance_to(playerPosition)
+                        testDist += distToPlayer
+                        if distToPlayer <= self.atkRange:
+                            testInRange += 1
+                    if testInRange > maxInRange or (testInRange == maxInRange and testPos.distance_to(self.pos) < maxPos.distance_to(self.pos)):
+                        maxInRange = testInRange
+                        maxPos.update(testPos.copy())
+                    testDist /= len(playerPositions)
+                    if testDist < closestDist or closestDist == -1:
+                        closestDist = testDist
+                        closestPos.update(testPos.copy())
         if maxInRange > 0:
             self.moveTo.update(maxPos)
             return
@@ -267,8 +295,9 @@ class MEDIC(PLAYER):
     def attack(self, players):
         healedPlayers = []
         for player in players:
-            playerPos, _ = player.getPositions
+            playerPos, _ = player.getPositions()
             distToPlayer = self.pos.distance_to(playerPos)
             if distToPlayer <= self.atkRange and distToPlayer != 0: # If distance is 0, then this is the healer, so can skip
                 healedPlayers.append(player.getLabel())
                 player.loseHP(-1 * self.atk) # Multiply by -1 meaning that the player will GAIN hp
+        return healedPlayers

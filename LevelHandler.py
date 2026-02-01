@@ -31,7 +31,7 @@ def loadLevel(fileName: str):
         medicCol = int(baseLayout[7])
         obstacleInfo = baseLayout[8:]
         obstaclePlaces = []
-        for i in range(0, len(obstacleInfo), 3):
+        for i in range(0, len(obstacleInfo), 2):
             try:
                 obstaclePlaces.append([int(obstacleInfo[i]), int(obstacleInfo[i+1])])
             except:
