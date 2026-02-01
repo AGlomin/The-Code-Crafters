@@ -70,10 +70,10 @@ turn_number = 1
 active_side = "player"
 stage_running = True
 #optional stage metric (we can expand later)
-total_damage taken = 0
+total_damage_taken = 0
 
 #emit session
-log_event("session_start", stage_id"{"configuration_id": "balanced", "difficulty_label":"balanced"})
+log_event("session_start", stage_id, {"configuration_id": "balanced", "difficulty_label":"balanced"})
 
 #stage start events
 log_event("stage_start", stage_id, {"enemy_count": len(enemies), "grid_size": f"{rows}x{cols}"})
