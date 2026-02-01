@@ -181,16 +181,28 @@ def logAttack(agent, isPlayer, targets):
     agentRange = agent.getAttackRange()
     for target in targets:
         if isPlayer:
-            log_event(
-                "character_attack",
-                stage_id,
-                {
-                    "attacker_id": agentLabel,
-                    "target_id": target,
-                    "damage": agentDamage,
-                    "attack_range": agentRange
-                }
-            )
+            if agentLabel == "medic":
+                log_event(
+                    "character_heal",
+                    stage_id,
+                    {
+                        "attacker_id": agentLabel,
+                        "target_id": target,
+                        "healed": agentDamage,
+                        "healing_range": agentRange
+                    }
+                )
+            else:
+                log_event(
+                    "character_attack",
+                    stage_id,
+                    {
+                        "attacker_id": agentLabel,
+                        "target_id": target,
+                        "damage": agentDamage,
+                        "attack_range": agentRange
+                    }
+                )
         else:
             log_event(
                 "enemy_attack",
