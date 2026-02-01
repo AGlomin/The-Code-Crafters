@@ -62,57 +62,176 @@ for player in playerInfo:
     rowPlace += 1
 # Initialise enemies as nothing, as no enemy agent information yet. This will eventually be loaded from the level information
 enemies = []
+#add 1 enemy so stage_completes can trigger
+if len(enemyInfo) > 0:
+    e = enemyInfo[0].copySelf()
+    e.updatePosition(pygame.math.Vector2(cols - 1, 0))
+    enemies.append(e)
 #stage identifier
 stage_id = 1
 
-#turn-based state
+# Turn-based state
 turn_number = 1
-active_side = "player"
+active_side = "player"  # "player" or "enemy"
 stage_running = True
-#optional stage metric (we can expand later)
+
+# Optional stage metric (expand later)
 total_damage_taken = 0
 
-#emit session
-log_event("session_start", stage_id, {"configuration_id": "balanced", "difficulty_label":"balanced"})
+# Emit session + stage start events
+log_event(
+    "session_start",
+    stage_id,
+    {
+        "config_id": "balanced",
+        "difficulty_label": "balanced"
+    }
+)
 
-#stage start events
-log_event("stage_start", stage_id, {"enemy_count": len(enemies), "grid_size": f"{rows}x{cols}"})
+log_event(
+    "stage_start",
+    stage_id,
+    {
+        "enemy_count": len(enemies),
+        "grid_size": f"{rows}x{cols}"
+    }
+)
 
-log_event( "turn_start", stage_id,{"turn_number": turn_number, "active_side": active_side})
+log_event(
+    "turn_start",
+    stage_id,
+    {
+        "turn_number": turn_number,
+        "active_side": active_side
+    }
+)
 
-# Time
+def get_hp(agent):
+    #Supports different attribute names (adjust if your classes differ)
+    if hasattr(agent, "health_points"):
+        return agent.health_points
+    if hasattr(agent, "hp"):
+        return agent.hp
+    return 1
+
+def stage_won(enemies):
+    #Win: all enemies defeated (requires at least 1 enemy)
+    return len(enemies) > 0 and all(get_hp(e) <= 0 for e in enemies)
+
+def stage_lost(players):
+    #Fail: all players defeated
+    return all(get_hp(p) <= 0 for p in players)
+
+def advance_turn():
+    global active_side, turn_number
+    if active_side == "player":
+        active_side = "enemy"
+    else:
+        active_side = "player"
+        turn_number += 1
+        
+#Time
 clock = pygame.time.Clock()
 dt = 0
 frame = 0
 
-# Frames per cycle: number of frames per animation cycle
+#Frames per cycle: number of frames per animation cycle
 framesPerCycle = 8
 
-# game loop
+#game loop
 running = True
 while running:
     updateSize = False
     # Checking for events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            if stage_running:
+                log_event(
+                    "quit",
+                    stage_id,
+                    {
+                        "turn_number": turn_number
+                    }
+                )
+                log_event(
+                    "stage_fail",
+                    stage_id,
+                    {
+                        "turns_taken": turn_number,
+                        "failure_reason": "window_closed"
+                    }
+                )
+                log_event(
+                    "session_end",
+                    stage_id,
+                    {
+                        "stages_completed": 0
+                    }
+                )
             running = False
         if event.type == pygame.WINDOWSIZECHANGED:
             screenWidth = screen.get_width()
             screenHeight = screen.get_height()
             size = findSize(screen, rows, cols)
             updateSize = True
-        # TEMP: fullscreen adjustment
+            
+            
+        #TEMP: fullscreen adjustment
         if event.type == pygame.KEYUP:
-            if event.key == pygame.K_f:
-                fullscreen = not(fullscreen)
-                if fullscreen:
-                    oldWidth = screenWidth
-                    oldHeight = screenHeight
-                    screen = createScreen(monitorWidth, monitorHeight, fullscreen)
-                else:
-                    screen = createScreen(oldWidth, oldHeight, fullscreen)
-                size = findSize(screen, rows, cols)
-                updateSize = True
+            # debugger: press W to force win (sets all enemies HP to 0)
+            if event.key == pygame.K_w and stage_running:
+                for enemy in enemies:
+                    if hasattr(enemy, "health_points"):
+                        enemy.health_points = 0
+                    elif hasattr(enemy, "hp"):
+                        enemy.hp = 0
+                        if event.key == pygame.K_f:
+                            fullscreen = not(fullscreen)
+                            if fullscreen:
+                                oldWidth = screenWidth
+                                oldHeight = screenHeight
+                                screen = createScreen(monitorWidth, monitorHeight, fullscreen)
+                            else:
+                                screen = createScreen(oldWidth, oldHeight, fullscreen)
+                            size = findSize(screen, rows, cols)
+                            updateSize = True
+            #advance turn by pressing SPACEBAR
+            if event.key == pygame.K_SPACE and stage_running:
+                advance_turn()
+                log_event(
+                    "turn_start",
+                    stage_id,
+                    {
+                        "turn_number": turn_number,
+                        "active_side": active_side
+                    }
+                )
+            #quit mid-stage by pressing ESC
+            if event.key == pygame.K_ESCAPE and stage_running:
+                stage_running = False
+                log_event(
+                    "quit",
+                    stage_id,
+                    {
+                        "turn_number": turn_number
+                    }
+                )
+                log_event(
+                    "stage_fail",
+                    stage_id,
+                    {
+                        "turns_taken": turn_number,
+                        "failure_reason": "quit"
+                    }
+                )
+                log_event(
+                    "session_end",
+                    stage_id,
+                    {
+                        "stages_completed": 0
+                    }
+                )
+                running = False
     # Display
     screen.fill("white")
     # Render tiles
@@ -135,8 +254,50 @@ while running:
     for enemy in enemies:
         enemy.renderHP(screen, tiles)
     pygame.display.flip()
+    #stage-end conditions (succeed/fail)
+    if stage_running:
+        if stage_won(enemies):
+            stage_running = False
+            log_event(
+                "stage_complete",
+                stage_id,
+                {
+                    "turns_taken": turn_number,
+                    "characters_alive": sum(1 for p in players if get_hp(p) > 0),
+                    "total_damage_taken": total_damage_taken
+                }
+            )
+            log_event(
+                "session_end",
+                stage_id,
+                {
+                    "stages_completed": 1
+                }
+            )
+            running = False
+    
+        elif stage_lost(players):
+            stage_running = False
+            log_event(
+                "stage_fail",
+                stage_id,
+                {
+                    "turns_taken": turn_number,
+                    "failure_reason": "all_players_defeated"
+                }
+            )
+            log_event(
+                "session_end",
+                stage_id,
+                {
+                    "stages_completed": 0
+                }
+            )
+            running = False
+
     # Update time and frame
     dt = clock.tick(30)
     frame = (frame + 1) % framesPerCycle
 
 pygame.quit()
+
