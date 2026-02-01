@@ -123,7 +123,7 @@ log_event(
         "active_side": active_side
     }
 )
-
+"""
 def get_hp(agent):
     #Supports different attribute names (adjust if your classes differ)
     if hasattr(agent, "health_points"):
@@ -131,14 +131,14 @@ def get_hp(agent):
     if hasattr(agent, "hp"):
         return agent.hp
     return 1
-
+"""
 def stage_won(enemies):
     #Win: all enemies defeated (requires at least 1 enemy)
-    return len(enemies) > 0 and all(get_hp(e) <= 0 for e in enemies)
+    return len(enemies) > 0 and all(e.findAlive() == 0 for e in enemies)
 
 def stage_lost(players):
     #Fail: all players defeated
-    return all(get_hp(p) <= 0 for p in players)
+    return all(p.findAlive() == 0 for p in players)
 
 def advance_turn():
     global active_side, turn_number
@@ -147,7 +147,8 @@ def advance_turn():
     else:
         active_side = "player"
         turn_number += 1
-
+"""
+Dealt with in agent class.
 def damage_agent(agent, amount):
     #reducing hp
     if hasattr(agent, "health_points"):
@@ -172,7 +173,34 @@ def player_attack():
             "attack_range": getattr(attacker, "attack_range", 1)
         }
     )
-
+"""
+def logAttack(agent, isPlayer, targets):
+    agentLabel = agent.getLabel()
+    agentDamage = agent.getAttack()
+    agentRange = agent.getAttackRange()
+    for target in targets:
+        if isPlayer:
+            log_event(
+                "character_attack",
+                stage_id,
+                {
+                    "attacker_id": agentLabel,
+                    "target_id": target.getLabel(),
+                    "damage": agentDamage,
+                    "attack_range": agentRange
+                }
+            )
+        else:
+            log_event(
+                "enemy_attack",
+                stage_id,
+                {
+                    "enemy_id": agentLabel,
+                    "target_id": target.getLabel(),
+                    "damage": agentDamage
+                }
+            )
+"""
 def enemy_attack():
     global total_damage_taken
     if len(enemies) == 0 or len(players) == 0:
@@ -180,7 +208,7 @@ def enemy_attack():
     enemy = enemies[0]
     target = players[0]
     damage = 5
-    damage_agent(target, damage)
+    # damage_agent(target, damage)
     total_damage_taken += damage
     log_event(
         "enemy_attack",
@@ -191,7 +219,7 @@ def enemy_attack():
             "damage": damage
         }
     )
-        
+"""
 #Time
 clock = pygame.time.Clock()
 dt = 0
@@ -295,6 +323,8 @@ while running:
                     }
                 )
                 running = False
+            """
+            Attacks run automatically
             #player attacks (press A), only on player turn
             if event.key == pygame.K_a and stage_running and active_side == "player":
                 player_attack()
@@ -302,6 +332,7 @@ while running:
             #enemy attacks (press E), only on enemy turn
             if event.key == pygame.K_e and stage_running and active_side == "enemy":
                 enemy_attack()
+            """
     # Display
     screen.fill("white")
     # Render tiles
@@ -333,7 +364,7 @@ while running:
                 stage_id,
                 {
                     "turns_taken": turn_number,
-                    "characters_alive": sum(1 for p in players if get_hp(p) > 0),
+                    "characters_alive": sum(p.findAlive() for p in players),
                     "total_damage_taken": total_damage_taken
                 }
             )

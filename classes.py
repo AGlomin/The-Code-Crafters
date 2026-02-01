@@ -64,6 +64,12 @@ class AGENT:
     # Returns true if the label is the same as own label, else returns false
     def checkLabel(self, label):
         return label == self.label
+    def getLabel(self):
+        return self.label
+    def getAttack(self):
+        return self.atk
+    def getAttackRange(self):
+        return self.atkRange
     # Create a copy of the agent, keeping its class
     def copySelf(self):
         return type(self)(self.maxHP, self.baseAtk, self.atkRange, self.moveSpeed, self.pos, self.spritesheetName, self.label)
@@ -179,10 +185,13 @@ class AGENT:
         return self.pos, self.moveTo
     # Attack all agents within range
     def attack(self, agents):
+        attackedAgents  = []
         for agent in agents:
             agentPos, _ = agent.getPositions()
             if self.pos.distance_to(agentPos) <= self.atkRange:
+                attackedAgents.append(agent.getLabel())
                 agent.loseHP(self.atk)
+        return attackedAgents
     def loseHP(self, amount):
         # Always sets the HP to 0 as a minumum, and maxHP as a maximum
         self.HP = min(self.maxHP, max(0, self.HP - amount))
@@ -256,8 +265,10 @@ class MEDIC(PLAYER):
     def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label):
         super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label)
     def attack(self, players):
+        healedPlayers = []
         for player in players:
             playerPos, _ = player.getPositions
             distToPlayer = self.pos.distance_to(playerPos)
             if distToPlayer <= self.atkRange and distToPlayer != 0: # If distance is 0, then this is the healer, so can skip
+                healedPlayers.append(player.getLabel())
                 player.loseHP(-1 * self.atk) # Multiply by -1 meaning that the player will GAIN hp
