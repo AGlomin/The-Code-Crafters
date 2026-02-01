@@ -186,7 +186,7 @@ def logAttack(agent, isPlayer, targets):
                     "character_heal",
                     stage_id,
                     {
-                        "attacker_id": agentLabel,
+                        "healer_id": agentLabel,
                         "target_id": target,
                         "healed": agentDamage,
                         "healing_range": agentRange
