@@ -182,6 +182,9 @@ class AGENT:
     def loseHP(self, amount):
         # Always sets the HP to 0 as a minumum, and maxHP as a maximum
         self.HP = min(self.maxHP, max(0, self.HP - amount))
+    # Return 1 if the agent is alive, else 0
+    def findAlive(self):
+        return 1 if self.HP > 0 else 0
 # Enemy Class: Class representing an enemy.
 class ENEMY(AGENT):
     def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName):
@@ -190,26 +193,40 @@ class ENEMY(AGENT):
         self.getMoveableLocations(gridWidth, gridHeight, obstacles, playerAgents, enemyAgents)
         playerPositions = []
         for player in playerAgents:
-            playerPos, _ = player.getPositions()
-            playerPositions.append(playerPos)
+            if player.findAlive == 1:
+                playerPos, _ = player.getPositions()
+                playerPositions.append(playerPos)
+        # Only run if all the players are alive
+        if len(playerPositions) == 0:
+            self.moveTo.update(self.pos)
+            return
         # First find area within movement range with the maximum players within range
         maxInRange = 0
         maxPos = pygame.math.Vector2((0,0))
+        closestDist = -1
+        closestPos = pygame.math.Vector2((0,0))
         for rowI in range(len(self.moveableLocations)):
             for colI in range(len(self.moveableLocations[rowI])):
                 testPos = pygame.math.Vector2((colI, rowI))
                 testInRange = 0
+                testDist = 0
                 for playerPosition in playerPositions:
-                    if testPos.distance_to(playerPosition) <= self.atkRange:
+                    distToPlayer = testPos.distance_to(playerPosition)
+                    testDist += distToPlayer
+                    if distToPlayer <= self.atkRange:
                         testInRange += 1
                 if testInRange > maxInRange or (testInRange == maxInRange and testPos.distance_to(self.pos) < maxPos.distance_to(self.pos)):
                     maxInRange = testInRange
                     maxPos.update(testPos)
+                testDist /= len(playerPositions)
+                if testDist < closestDist or closestDist == -1:
+                    closestDist = testDist
+                    closestPos.update(testPos)
         if maxInRange > 0:
             self.moveTo.update(maxPos)
             return
-        # If there are no targets in range, move towards the closest target.
-        # TODO: WORK OUT HOW TO IMPLEMENT THIS
+        # If there are no targets in range, move towards the closest target. TEMP: Base this on average distance to players, no pathfinding
+        self.moveTo.update(closestPos)
 # Player Class: Class representing a player character. NOTE: Medic does NOT use this class, instead uses a child class of player
 class PLAYER(AGENT):
     def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName):
