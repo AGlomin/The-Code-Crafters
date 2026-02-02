@@ -242,8 +242,13 @@ frame = 0
 framesPerCycle = 8
 animating = False
 animatingMove = False
+movementDone = False
 #game loop
 running = True
+activePlayer = 0
+# Start players
+for player in players:
+    player.startTurn(cols, rows, obstacles, players, enemies)
 while running:
     updateSize = False
     # Checking for events
@@ -278,8 +283,38 @@ while running:
             screenHeight = screen.get_height()
             size = findSize(screen, rows, cols)
             updateSize = True
-            
-            
+        if event.type == pygame.MOUSEBUTTONUP:
+            if active_side == "player" and not(animating):
+                mx, my = event.pos
+                clickedRow, clickedCol = -1, -1
+                for row in tiles:
+                    for col in row:
+                        selectedRow, selectedCol = col.getClicked(mx, my)
+                        if selectedRow != -1 and selectedCol != -1:
+                            clickedRow = selectedRow
+                            clickedCol = selectedCol
+                if clickedRow == -1 and clickedCol == -1:
+                    continue
+                # Check if clicking a player
+                playerClicked = False
+                for playerI in range(len(players)):
+                    if not(playerClicked):
+                        player = players[playerI]
+                        playerPos, _ = player.getPositions()
+                        if playerPos.x == clickedCol and playerPos.y == clickedRow:
+                            playerClicked = True
+                            activePlayer = playerI
+                            print(playerI)
+                # If clicking a player, then the active player is changed, so do not move the position
+                if playerClicked:
+                    continue
+                moveSuccessful = players[activePlayer].attemptToMove(clickedRow, clickedCol)
+                # Only update the open spaces if the move was succesful
+                if moveSuccessful:
+                    for player in players:
+                        player.getMoveableLocations(cols, rows, obstacles, players, enemies)
+                    for enemy in enemies:
+                        enemy.getMoveableLocations(cols, rows, obstacles, players, enemies)
         #TEMP: fullscreen adjustment
         if event.type == pygame.KEYUP:
             
@@ -353,9 +388,16 @@ while running:
         animatingAgents = players if active_side == "player" else enemies
         # Animate Movement
         if animatingMove:
-            for agent in animatingAgents:
-                agent.updatePosition(agent.getMoveTo())
-            animatingMove = False
+            movementDone = True
+            if movementDone:
+                for agent in animatingAgents:
+                    agent.updatePosition(agent.getMoveTo())
+                # Update the moveable locations for both players and enemies
+                for player in players:
+                    player.getMoveableLocations(cols, rows, obstacles, players, enemies)
+                for enemy in enemies:
+                    enemy.getMoveableLocations(cols, rows, obstacles, players, enemies)
+                animatingMove = False
         # Animate Attack
         else:
             for agent in animatingAgents:
@@ -367,6 +409,8 @@ while running:
                     targets = agent.attack(players)
                     logAttack(agent, agent.getLabel() == "medic", targets)
             animating = False
+            movementDone = False
+            animatingMove = True
             advance_turn()
             log_event(
                 "turn_start",
@@ -380,7 +424,11 @@ while running:
                 for enemy in enemies:
                     enemy.findOptimalMoveLocation(cols, rows, obstacles, players, enemies)
                 animating = True
-                animatingMove = True
+                for player in players:
+                    player.endTurn()
+            else:
+                for player in players:
+                    player.startTurn(cols, rows, obstacles, players, enemies)
     #stage-end conditions (succeed/fail) - Moved this up, better to deal with this before rendering, as it's technically part of the gameplay 🙂
     if stage_running:
         if stage_won(enemies):
@@ -431,8 +479,9 @@ while running:
                 col.updateSizeAndPos(size, screenWidth, screenHeight, rows, cols)
             col.render(screen)
     # Render player agents
-    for player in players:
-        player.render(screen, tiles)
+    for playerI in range(len(players)):
+        player = players[playerI]
+        player.render(screen, tiles, active_side == "player" and not(animating), True, activePlayer == playerI)
     # Render enemy agents
     for enemy in enemies:
         enemy.render(screen, tiles)

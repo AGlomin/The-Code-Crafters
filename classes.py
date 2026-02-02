@@ -33,7 +33,7 @@ class TILE:
         return self.size
     # Get whether the mouse clicked this tile, and return row/col if so (if not, return -1, -1)
     def getClicked(self, mx, my):
-        if (self.left <= mx and mx <= self.x + self.size) and (self.top <= my <= self.top + self.size):
+        if (self.x <= mx and mx <= self.x + self.size) and (self.y <= my <= self.y + self.size):
             return self.row, self.col
         return -1, -1
 class OBSTACLE:
@@ -84,6 +84,10 @@ class AGENT:
             self.hpBar = pygame.image.load("assets/HPBar.png")
         except:
             self.hpBar = None
+        try:
+            self.activeBox = pygame.image.load("assets/ActiveOutline.png")
+        except:
+            self.activeBox = None
         self.label = label
     # Returns true if the label is the same as own label, else returns false
     def checkLabel(self, label):
@@ -103,8 +107,12 @@ class AGENT:
         xRender, yRender = tile.getPosition()
         sizeRender = tile.getSize()
         return xRender, yRender, sizeRender
+    def getMoveToRenderPos(self, tiles):
+        tile = tiles[round(self.moveTo.y)][round(self.moveTo.x)]
+        xRender, yRender = tile.getPosition()
+        return xRender, yRender
     # Render the agent
-    def render(self, screen, tiles):
+    def render(self, screen, tiles, selectingPosition = False, player = False, activePlayer = False):
         xRender, yRender, sizeRender = self.getRenderPosAndSize(tiles)
         # For now, use a single sprite (found at row 0, column 0 in sprite sheet)
         spritesheetRow = 0
@@ -115,6 +123,23 @@ class AGENT:
         # Scale and render the sprite
         spriteScaled = pygame.transform.scale(sprite, (sizeRender, sizeRender))
         screen.blit(spriteScaled, (xRender, yRender))
+        if player and selectingPosition:
+            # Render position being moved to, if this is different to the current position
+            if not(self.moveTo.distance_to(self.pos) == 0):
+                moveToX, moveToY = self.getMoveToRenderPos(tiles)
+                spriteAlpha = spriteScaled.copy()
+                spriteAlpha.set_alpha(128)
+                screen.blit(spriteAlpha, (moveToX, moveToY))
+            # Render if the tile is active and the active outline was successfully loaded
+            if self.activeBox != None:
+                if activePlayer:
+                    # Draw a 5x5 rectangle, 1 pixel away from top of sprite
+                    activeX, activeY = xRender + sizeRender // 32, yRender + sizeRender // 32
+                    activeSize = 5 * sizeRender // 32
+                    pygame.draw.rect(screen, "green", (activeX, activeY, activeSize, activeSize))
+                activeScaled = pygame.transform.scale(self.activeBox, (sizeRender, sizeRender))
+                screen.blit(activeScaled, (xRender, yRender))
+
     # Render the HP bar of the agent
     def renderHP(self, screen, tiles):
         # Only run if the HP bar was successfully loaded
@@ -143,14 +168,14 @@ class AGENT:
         screen.blit(hpScaled, (xRender, yRender + hpImgOffset))
     # Reset the move to position at the start of each turn, and upon load
     def resetMoveToPos(self):
-        self.moveTo = self.pos
+        self.moveTo = self.pos.copy()
     # Get position to move to - for testing, will eventually have animation
     def getMoveTo(self):
         return self.moveTo
     # Reset the position of the agent
     def updatePosition(self, pos):
-        self.pos.update(pos)
-        self.moveTo.update(pos)
+        self.pos.update(pos.copy())
+        self.moveTo.update(pos.copy())
     # Flood Fill: Used for finding all possible spaces an agent can move to
     def floodFill(self, searchFor, flooded, env):
         if self.moveSpeed == searchFor:
@@ -274,8 +299,8 @@ class PLAYER(AGENT):
         super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label)
         self.playerTurn = False
     # Start turn by finding all possible locations to move to
-    def startTurn(self, env):
-        self.getMoveableLocations(env)
+    def startTurn(self, gridWidth, gridHeight, obstacles, playerAgents, enemyAgents):
+        self.getMoveableLocations(gridWidth, gridHeight, obstacles, playerAgents, enemyAgents)
         self.playerTurn = True
     # End turn
     def endTurn(self):
@@ -283,7 +308,7 @@ class PLAYER(AGENT):
     # Attempt to move to where mouse clicked (Calculated ourside of class), returns if this is successful, as the moveable locations will need to be updated following this
     def attemptToMove(self, mouseRow, mouseCol):
         if self.playerTurn:
-            if self.moveableLocations[mouseRow, mouseCol] != -1:
+            if self.moveableLocations[mouseRow][mouseCol] != -1:
                 self.moveTo.update(mouseCol, mouseRow)
                 return True
         return False
