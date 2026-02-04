@@ -101,7 +101,7 @@ total_damage_taken = 0
 log_event(
     "session_start",
     stage_id,
-    {
+    {   "session_id":session_id,
         "config_id": "balanced",
         "difficulty_label": "balanced"
     }
@@ -110,7 +110,7 @@ log_event(
 log_event(
     "stage_start",
     stage_id,
-    {
+    {   "session_id":session_id,
         "enemy_count": len(enemies),
         "grid_size": f"{rows}x{cols}"
     }
@@ -119,7 +119,7 @@ log_event(
 log_event(
     "turn_start",
     stage_id,
-    {
+    {   "session_id":session_id,
         "turn_number": turn_number,
         "active_side": active_side
     }
@@ -196,7 +196,7 @@ def logAttack(agent, isPlayer, targets):
                 log_event(
                     "character_attack",
                     stage_id,
-                    {
+                    {   "session_id":session_id,
                         "attacker_id": agentLabel,
                         "target_id": target,
                         "damage": agentDamage,
@@ -207,7 +207,7 @@ def logAttack(agent, isPlayer, targets):
             log_event(
                 "enemy_attack",
                 stage_id,
-                {
+                {   "session_id":session_id,
                     "enemy_id": agentLabel,
                     "target_id": target,
                     "damage": agentDamage
@@ -223,10 +223,11 @@ def enemy_attack():
     damage = 5
     # damage_agent(target, damage)
     total_damage_taken += damage
+    
     log_event(
         "enemy_attack",
         stage_id,
-        {
+        {   "session_id":session_id,
             "enemy_id": getattr(enemy, "name", "enemy_0"),
             "target_id": getattr(target, "name", "player_0"),
             "damage": damage
@@ -258,14 +259,14 @@ while running:
                 log_event(
                     "quit",
                     stage_id,
-                    {
+                    {   "session_id":session_id,
                         "turn_number": turn_number
                     }
                 )
                 log_event(
                     "stage_fail",
                     stage_id,
-                    {
+                    {   "session_id":session_id,
                         "turns_taken": turn_number,
                         "failure_reason": "window_closed"
                     }
@@ -273,7 +274,7 @@ while running:
                 log_event(
                     "session_end",
                     stage_id,
-                    {
+                    {   "session_id":session_id,
                         "stages_completed": 0
                     }
                 )
@@ -309,6 +310,16 @@ while running:
                 if playerClicked:
                     continue
                 moveSuccessful = players[activePlayer].attemptToMove(clickedRow, clickedCol)
+                if moveSuccessful:
+                    log_event("character_move",
+                             stage_id,
+                             {"session_id":session_id,
+                             "character_id": players[activePlayer].getLabel(),
+                             "to_row": clickedRow,
+                             "to_col": clickedCol,
+                             "turn_number":turn_number
+                             }
+                             )
                 # Only update the open spaces if the move was succesful
                 if moveSuccessful:
                     for player in players:
@@ -337,11 +348,20 @@ while running:
                 animating = True
                 animatingMove = True
                 """
+                log_event(
+                    "turn_end", 
+                    stage_id{
+                    
+                    "session_id":session_id,
+                    "turn_number":turn_number,
+                    "active_side": active_side
+                    }
+                )
                 advance_turn()
                 log_event(
                     "turn_start",
                     stage_id,
-                    {
+                    {   "session_id":session_id,
                         "turn_number": turn_number,
                         "active_side": active_side
                     }
@@ -353,14 +373,14 @@ while running:
                 log_event(
                     "quit",
                     stage_id,
-                    {
+                    {   "session_id":session_id,
                         "turn_number": turn_number
                     }
                 )
                 log_event(
                     "stage_fail",
                     stage_id,
-                    {
+                    {   "session_id":session_id,
                         "turns_taken": turn_number,
                         "failure_reason": "quit"
                     }
@@ -368,7 +388,7 @@ while running:
                 log_event(
                     "session_end",
                     stage_id,
-                    {
+                    {   "session_id":session_id,
                         "stages_completed": 0
                     }
                 )
@@ -411,11 +431,20 @@ while running:
             animating = False
             movementDone = False
             animatingMove = True
+            log_event(
+                    "turn_end", 
+                    stage_id{
+                    
+                    "session_id":session_id,
+                    "turn_number":turn_number,
+                    "active_side": active_side
+                    }
+                )
             advance_turn()
             log_event(
                 "turn_start",
                 stage_id,
-                {
+                {   "session_id":session_id,
                     "turn_number": turn_number,
                     "active_side": active_side
                 }
@@ -436,7 +465,7 @@ while running:
             log_event(
                 "stage_complete",
                 stage_id,
-                {
+                {   "session_id":session_id,
                     "turns_taken": turn_number,
                     "characters_alive": sum(p.findAlive() for p in players),
                     "total_damage_taken": total_damage_taken
@@ -445,7 +474,7 @@ while running:
             log_event(
                 "session_end",
                 stage_id,
-                {
+                {   "session_id":session_id,
                     "stages_completed": 1
                 }
             )
@@ -456,7 +485,7 @@ while running:
             log_event(
                 "stage_fail",
                 stage_id,
-                {
+                {   "session_id":session_id,
                     "turns_taken": turn_number,
                     "failure_reason": "all_players_defeated"
                 }
@@ -464,7 +493,7 @@ while running:
             log_event(
                 "session_end",
                 stage_id,
-                {
+                {   "session_id":session_id,
                     "stages_completed": 0
                 }
             )
@@ -501,6 +530,7 @@ while running:
     frame = (frame + 1) % framesPerCycle
 
 pygame.quit()
+
 
 
 
