@@ -11,7 +11,7 @@ log_event(
 log_event(
     event_type="stage_start",
     stage_id=1,
-    session_id=str(uuid.uuid4())
+    session_id=str(uuid.uuid4()),
     payload={"session_id":session_id}
 )
 
