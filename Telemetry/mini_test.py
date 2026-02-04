@@ -18,7 +18,7 @@ log_event(
 log_event(
     event_type="character_attack",
     stage_id=1,
-    session_id=str(uuid.uuid4())
+    session_id=str(uuid.uuid4()),
     payload={"session_id":session_id,
         "attacker_id": "player_1",
         "target_id": "enemy_1",
@@ -29,7 +29,7 @@ log_event(
 log_event(
     event_type="stage_complete",
     stage_id=1,
-    session_id=str(uuid.uuid4())
+    session_id=str(uuid.uuid4()),
     payload={"session_id":session_id,
              "turns_taken": 5}
 )
