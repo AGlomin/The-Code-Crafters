@@ -310,6 +310,7 @@ while running:
                 if playerClicked:
                     continue
                 moveSuccessful = players[activePlayer].attemptToMove(clickedRow, clickedCol)
+                """ no: movement occurs at the end of a player turn, NOT when a position is clicked.
                 if moveSuccessful:
                     log_event("character_move",
                              stage_id,
@@ -320,6 +321,7 @@ while running:
                              "turn_number":turn_number
                              }
                              )
+                """
                 # Only update the open spaces if the move was succesful
                 if moveSuccessful:
                     for player in players:
@@ -347,6 +349,9 @@ while running:
             if event.key == pygame.K_SPACE and stage_running:
                 animating = True
                 animatingMove = True
+                if active_side == "player":
+                    for player in players:
+                        player.getMovementPath()
                 """
                 log_event(
                     "turn_end", 
@@ -408,7 +413,10 @@ while running:
         animatingAgents = players if active_side == "player" else enemies
         # Animate Movement
         if animatingMove:
-            movementDone = True
+            for agent in animatingAgents:
+                agent.moveAlongPath()
+            if all([agent.getMovesLeft() == 0 for agent in animatingAgents]):
+                movementDone = True
             if movementDone:
                 for agent in animatingAgents:
                     agent.updatePosition(agent.getMoveTo())
@@ -452,6 +460,7 @@ while running:
             if active_side == "enemy":
                 for enemy in enemies:
                     enemy.findOptimalMoveLocation(cols, rows, obstacles, players, enemies)
+                    enemy.getMovementPath()
                 animating = True
                 for player in players:
                     player.endTurn()

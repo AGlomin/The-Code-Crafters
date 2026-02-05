@@ -111,6 +111,46 @@ class AGENT:
         tile = tiles[round(self.moveTo.y)][round(self.moveTo.x)]
         xRender, yRender = tile.getPosition()
         return xRender, yRender
+    # Scan for first possible tile to move from, following order up, down, left, right
+    def scanForTile(self, lookingFor, position):
+        posRow, posCol = position.y, position.x
+        for i in range(4):
+            # Deals with y change
+            rowChange = 2 * i - 1 if i // 2 == 0 else 0
+            # Deals with x change
+            colChange = 2 * i - 5 if i // 2 == 1 else 0
+            scanRow, scanCol = posRow + rowChange, posCol + colChange
+            rowFits = scanRow >= 0 and scanRow < len(self.moveableLocations)
+            colFits = scanCol >= 0 and scanCol < len(self.moveableLocations[0])
+            if rowFits and colFits and self.moveableLocations[scanRow][scanCol] == lookingFor:
+                return pygame.Vector2((scanCol, scanRow))
+        # This shouldn't occur, but for safety, return agent base position
+        playerPosCopy = self.pos.copy()
+        return playerPosCopy
+    # Find the path the agent should move on
+    def findPath(self, lookingFor, position):
+        # If looking for minus one, then this is the tile the agent is on
+        if lookingFor == -1:
+            playerPosCopy = self.pos.copy()
+            return [playerPosCopy]
+        previousPosition = self.scanForTile(lookingFor, position)
+        previousTiles = self.findPath(lookingFor - 1, previousPosition)
+        previousTiles.append(position.copy())
+        return previousTiles
+    def getMovementPath(self):
+        moveToAmount = self.moveableLocations[self.moveTo.y][self.moveTo.x]
+        self.movementPath = self.findPath(moveToAmount - 1, self.moveTo)
+    # Move along path
+    def moveAlongPath(self):
+        if len(self.movementPath) > 0:
+            self.movementPath.pop(0)
+            if len(self.movementPath) > 0:
+                self.pos = self.movementPath[0]
+            else:
+                self.pos = self.moveTo
+    # Get number of moves left
+    def getMovesLeft(self):
+        return len(self.movementPath)
     # Render the agent
     def render(self, screen, tiles, selectingPosition = False, player = False, activePlayer = False):
         xRender, yRender, sizeRender = self.getRenderPosAndSize(tiles)
