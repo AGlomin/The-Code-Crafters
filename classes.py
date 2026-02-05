@@ -89,6 +89,7 @@ class AGENT:
         except:
             self.activeBox = None
         self.label = label
+        self.movementPath = [] # default to blank to avoid issues
     # Returns true if the label is the same as own label, else returns false
     def checkLabel(self, label):
         return label == self.label
@@ -113,7 +114,7 @@ class AGENT:
         return xRender, yRender
     # Scan for first possible tile to move from, following order up, down, left, right
     def scanForTile(self, lookingFor, position):
-        posRow, posCol = position.y, position.x
+        posRow, posCol = round(position.y), round(position.x)
         for i in range(4):
             # Deals with y change
             rowChange = 2 * i - 1 if i // 2 == 0 else 0
@@ -138,7 +139,7 @@ class AGENT:
         previousTiles.append(position.copy())
         return previousTiles
     def getMovementPath(self):
-        moveToAmount = self.moveableLocations[self.moveTo.y][self.moveTo.x]
+        moveToAmount = self.moveableLocations[round(self.moveTo.y)][round(self.moveTo.x)]
         self.movementPath = self.findPath(moveToAmount - 1, self.moveTo)
     # Move along path
     def moveAlongPath(self):
@@ -147,7 +148,7 @@ class AGENT:
             if len(self.movementPath) > 0:
                 self.pos = self.movementPath[0]
             else:
-                self.pos = self.moveTo
+                self.pos = self.moveTo.copy()
     # Get number of moves left
     def getMovesLeft(self):
         return len(self.movementPath)

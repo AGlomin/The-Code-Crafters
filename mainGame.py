@@ -7,7 +7,8 @@ import time
 import uuid
 from Telemetry.telemetry.logger import log_event
 pygame.init()
-
+# FOR TESTING
+session_id = 0
 # function to find the size of a tile, given the number of rows, columns, and size of the screen
 def findSize(screen, rows, cols):
     screenWidth = screen.get_width()
@@ -441,8 +442,8 @@ while running:
             animatingMove = True
             log_event(
                     "turn_end", 
-                    stage_id{
-                    
+                    stage_id,
+                    {
                     "session_id":session_id,
                     "turn_number":turn_number,
                     "active_side": active_side
