@@ -70,8 +70,9 @@ class AGENT:
         self.atkRange = atkRange
         self.moveSpeed = moveSpeed
         # Pos is given as a vect2, where the x corresponds to the column, and the y corresponds to the row
-        self.pos = pos
+        self.pos = pos.copy()
         self.resetMoveToPos()
+        self.previousPosition = self.pos.copy()
         self.spritesheetName = spritesheetName
         try:
             self.spritesheet = pygame.image.load(f"assets/{spritesheetName}.png")
@@ -90,6 +91,7 @@ class AGENT:
             self.activeBox = None
         self.label = label
         self.movementPath = [] # default to blank to avoid issues
+        self.framesPerTile = 8
     # Returns true if the label is the same as own label, else returns false
     def checkLabel(self, label):
         return label == self.label
@@ -103,9 +105,20 @@ class AGENT:
     def copySelf(self):
         return type(self)(self.maxHP, self.baseAtk, self.atkRange, self.moveSpeed, self.pos, self.spritesheetName, self.label)
     # Get the position and size of the agent, depending on its position and tile size
-    def getRenderPosAndSize(self, tiles):
+    def getRenderPosAndSize(self, tiles, moveFrame, fromMainRender = False):
         tile = tiles[round(self.pos.y)][round(self.pos.x)]
-        xRender, yRender = tile.getPosition()
+        if moveFrame % self.framesPerTile == 0 and fromMainRender:
+            self.moveAlongPath()
+        if len(self.movementPath) == 0:
+            xRender, yRender = tile.getPosition()
+        else:
+            tilePrev = tiles[round(self.previousPosition.y)][round(self.previousPosition.x)]
+            prevTileX, prevTileY = tilePrev.getPosition()
+            newTileX, newTileY = tile.getPosition()
+            diffAmount = (moveFrame % self.framesPerTile) / self.framesPerTile
+            xRender = round(pygame.math.lerp(prevTileX, newTileX, diffAmount))
+            yRender = round(pygame.math.lerp(prevTileY, newTileY, diffAmount))
+            # xRender, yRender = tile.getPosition()
         sizeRender = tile.getSize()
         return xRender, yRender, sizeRender
     def getMoveToRenderPos(self, tiles):
@@ -144,17 +157,18 @@ class AGENT:
     # Move along path
     def moveAlongPath(self):
         if len(self.movementPath) > 0:
+            self.previousPosition = self.movementPath[0].copy()
             self.movementPath.pop(0)
             if len(self.movementPath) > 0:
-                self.pos = self.movementPath[0]
+                self.pos = self.movementPath[0].copy()
             else:
                 self.pos = self.moveTo.copy()
     # Get number of moves left
     def getMovesLeft(self):
         return len(self.movementPath)
     # Render the agent
-    def render(self, screen, tiles, selectingPosition = False, player = False, activePlayer = False):
-        xRender, yRender, sizeRender = self.getRenderPosAndSize(tiles)
+    def render(self, screen, tiles, frame, moveFrame, selectingPosition = False, player = False, activePlayer = False):
+        xRender, yRender, sizeRender = self.getRenderPosAndSize(tiles, moveFrame, True)
         # For now, use a single sprite (found at row 0, column 0 in sprite sheet)
         spritesheetRow = 0
         spritesheetCol = 0
@@ -182,11 +196,11 @@ class AGENT:
                 screen.blit(activeScaled, (xRender, yRender))
 
     # Render the HP bar of the agent
-    def renderHP(self, screen, tiles):
+    def renderHP(self, screen, tiles, moveFrame):
         # Only run if the HP bar was successfully loaded
         if self.hpBar == None:
             return
-        xRender, yRender, sizeRender = self.getRenderPosAndSize(tiles)
+        xRender, yRender, sizeRender = self.getRenderPosAndSize(tiles, moveFrame)
         hpPercentage = self.HP / self.maxHP
         hpColor = 2 * hpPercentage
         if hpColor > 1:

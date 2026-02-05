@@ -239,6 +239,7 @@ def enemy_attack():
 clock = pygame.time.Clock()
 dt = 0
 frame = 0
+moveFrame = 0
 
 #Frames per cycle: number of frames per animation cycle
 framesPerCycle = 8
@@ -353,6 +354,7 @@ while running:
                 if active_side == "player":
                     for player in players:
                         player.getMovementPath()
+                        moveFrame = 0
                 """
                 log_event(
                     "turn_end", 
@@ -414,8 +416,10 @@ while running:
         animatingAgents = players if active_side == "player" else enemies
         # Animate Movement
         if animatingMove:
+            """
             for agent in animatingAgents:
                 agent.moveAlongPath()
+            """
             if all([agent.getMovesLeft() == 0 for agent in animatingAgents]):
                 movementDone = True
             if movementDone:
@@ -462,6 +466,7 @@ while running:
                 for enemy in enemies:
                     enemy.findOptimalMoveLocation(cols, rows, obstacles, players, enemies)
                     enemy.getMovementPath()
+                    moveFrame = 0
                 animating = True
                 for player in players:
                     player.endTurn()
@@ -520,25 +525,25 @@ while running:
     # Render player agents
     for playerI in range(len(players)):
         player = players[playerI]
-        player.render(screen, tiles, active_side == "player" and not(animating), True, activePlayer == playerI)
+        player.render(screen, tiles, frame, moveFrame, active_side == "player" and not(animating), True, activePlayer == playerI)
     # Render enemy agents
     for enemy in enemies:
-        enemy.render(screen, tiles)
+        enemy.render(screen, tiles, frame, moveFrame)
     # Render obstacles
     for obstacle in obstacles:
         obstacle.render(screen, tiles)
     # HP Rendered after everything else rendered, to allow it to be shown on top of everything else
     # Render HP of all player agents
     for player in players:
-        player.renderHP(screen, tiles)
+        player.renderHP(screen, tiles, moveFrame)
     # Render HP of all enemy agents
     for enemy in enemies:
-        enemy.renderHP(screen, tiles)
+        enemy.renderHP(screen, tiles, moveFrame)
     pygame.display.flip()
     # Update time and frame
     dt = clock.tick(30)
     frame = (frame + 1) % framesPerCycle
-
+    moveFrame += 1
 pygame.quit()
 
 
