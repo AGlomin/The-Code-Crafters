@@ -85,6 +85,7 @@ class AGENT:
             self.hpBar = pygame.image.load("assets/HPBar.png")
         except:
             self.hpBar = None
+        self.faceRight = False
         try:
             self.activeBox = pygame.image.load("assets/ActiveOutline.png")
         except:
@@ -92,6 +93,8 @@ class AGENT:
         self.label = label
         self.movementPath = [] # default to blank to avoid issues
         self.framesPerTile = 8
+    def getBaseFacingDir(self, stageWidth):
+        self.faceRight = self.pos.x < stageWidth // 2
     # Returns true if the label is the same as own label, else returns false
     def checkLabel(self, label):
         return label == self.label
@@ -111,6 +114,7 @@ class AGENT:
             self.moveAlongPath()
         if len(self.movementPath) == 0:
             xRender, yRender = tile.getPosition()
+            yDir = 0
         else:
             tilePrev = tiles[round(self.previousPosition.y)][round(self.previousPosition.x)]
             prevTileX, prevTileY = tilePrev.getPosition()
@@ -118,9 +122,19 @@ class AGENT:
             diffAmount = (moveFrame % self.framesPerTile) / self.framesPerTile
             xRender = round(pygame.math.lerp(prevTileX, newTileX, diffAmount))
             yRender = round(pygame.math.lerp(prevTileY, newTileY, diffAmount))
+            # yDir : way the character faces in the y direction, only used for movement animation
+            yDir = 0
+            if prevTileY > newTileY:
+                # Going up
+                yDir = -1
+            elif prevTileY < newTileY:
+                # Going down
+                yDir = 1
+            # faceRight: Stored, used for full rendering (character faces last direction they moved)
+            self.faceRight = newTileX > prevTileX
             # xRender, yRender = tile.getPosition()
         sizeRender = tile.getSize()
-        return xRender, yRender, sizeRender
+        return xRender, yRender, sizeRender, yDir
     def getMoveToRenderPos(self, tiles):
         tile = tiles[round(self.moveTo.y)][round(self.moveTo.x)]
         xRender, yRender = tile.getPosition()
@@ -168,15 +182,15 @@ class AGENT:
         return len(self.movementPath)
     # Render the agent
     def render(self, screen, tiles, frame, moveFrame, selectingPosition = False, player = False, activePlayer = False):
-        xRender, yRender, sizeRender = self.getRenderPosAndSize(tiles, moveFrame, True)
+        xRender, yRender, sizeRender, yDir = self.getRenderPosAndSize(tiles, moveFrame, True)
         # For now, use a single sprite (found at row 0, column 0 in sprite sheet)
         spritesheetRow = 0
         spritesheetCol = 0
         # Only get the current sprite. SRCALPHA flag ensures a transparent background
         sprite = pygame.Surface((32, 32), flags = pygame.SRCALPHA)
         sprite.blit(self.spritesheet, (0, 0), (spritesheetCol * 32, spritesheetRow * 32, 32, 32))
-        # Scale and render the sprite
-        spriteScaled = pygame.transform.scale(sprite, (sizeRender, sizeRender))
+        # Scale, flip (if necessary) and render the sprite
+        spriteScaled = pygame.transform.flip(pygame.transform.scale(sprite, (sizeRender, sizeRender)), self.faceRight, False)
         screen.blit(spriteScaled, (xRender, yRender))
         if player and selectingPosition:
             # Render position being moved to, if this is different to the current position
@@ -200,7 +214,7 @@ class AGENT:
         # Only run if the HP bar was successfully loaded
         if self.hpBar == None:
             return
-        xRender, yRender, sizeRender = self.getRenderPosAndSize(tiles, moveFrame)
+        xRender, yRender, sizeRender, _ = self.getRenderPosAndSize(tiles, moveFrame)
         hpPercentage = self.HP / self.maxHP
         hpColor = 2 * hpPercentage
         if hpColor > 1:
@@ -256,7 +270,7 @@ class AGENT:
             return self.floodFill(fillFor, flooded, env)
         return flooded
     # Find all open tiles
-    def getOpenTiles(self, gridWidth, gridHeight, obstacles, playerAgents, enemyAgents):
+    def getOpenTiles(self, gridWidth, gridHeight, obstacles, playerAgents, enemyAgents, considerMoveTo = True):
         baseArea = [[-1 for col in range(gridWidth)] for row in range(gridHeight)]
         baseArea[round(self.pos.y)][round(self.pos.x)] = 0
         env = [[True for col in range(gridWidth)] for row in range(gridHeight)]
@@ -271,7 +285,8 @@ class AGENT:
             if self.pos.distance_to(playerPos) == 0 and self.moveTo.distance_to(playerMoveToPos) == 0:
                 continue
             env[round(playerPos.y)][round(playerPos.x)] = False
-            env[round(playerMoveToPos.y)][round(playerMoveToPos.x)] = False
+            if considerMoveTo:
+                env[round(playerMoveToPos.y)][round(playerMoveToPos.x)] = False
         # Update the environment for enemy agents, to prevent overlaps
         for enemy in enemyAgents:
             enemyPos, enemyMoveToPos = enemy.getPositions()
@@ -279,11 +294,12 @@ class AGENT:
             if self.pos.distance_to(enemyPos) == 0 and self.moveTo.distance_to(enemyMoveToPos) == 0:
                 continue
             env[round(enemyPos.y)][round(enemyPos.x)] = False
-            env[round(enemyMoveToPos.y)][round(enemyMoveToPos.x)] = False
+            if considerMoveTo:
+                env[round(enemyMoveToPos.y)][round(enemyMoveToPos.x)] = False
         return baseArea, env
     # Find all moveable locations, given the size of the grid, an array of all players, and an array of all enemies
-    def getMoveableLocations(self, gridWidth, gridHeight, obstacles, playerAgents, enemyAgents):
-        baseArea, env = self.getOpenTiles(gridWidth, gridHeight, obstacles, playerAgents, enemyAgents)
+    def getMoveableLocations(self, gridWidth, gridHeight, obstacles, playerAgents, enemyAgents, considerMoveTo = True):
+        baseArea, env = self.getOpenTiles(gridWidth, gridHeight, obstacles, playerAgents, enemyAgents, considerMoveTo)
         self.moveableLocations = self.floodFill(0, baseArea, env)
     # Returns the current and move to positions
     def getPositions(self):
@@ -305,6 +321,8 @@ class AGENT:
     # Return 1 if the agent is alive, else 0
     def findAlive(self):
         return 1 if self.HP > 0 else 0
+    def getLabel(self):
+        return self.label
 # Enemy Class: Class representing an enemy.
 class ENEMY(AGENT):
     def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label):
@@ -355,15 +373,23 @@ class PLAYER(AGENT):
         self.playerTurn = False
     # Start turn by finding all possible locations to move to
     def startTurn(self, gridWidth, gridHeight, obstacles, playerAgents, enemyAgents):
-        self.getMoveableLocations(gridWidth, gridHeight, obstacles, playerAgents, enemyAgents)
+        self.getMoveableLocations(gridWidth, gridHeight, obstacles, playerAgents, enemyAgents, False)
         self.playerTurn = True
     # End turn
     def endTurn(self):
         self.playerTurn = False
     # Attempt to move to where mouse clicked (Calculated ourside of class), returns if this is successful, as the moveable locations will need to be updated following this
-    def attemptToMove(self, mouseRow, mouseCol):
+    def attemptToMove(self, mouseRow, mouseCol, players):
         if self.playerTurn:
-            if self.moveableLocations[mouseRow][mouseCol] != -1:
+            taken = False
+            for player in players:
+                # If the labels are the same, this is the player
+                if player.getLabel() == self.label:
+                    continue
+                _, playerCheckPos = player.getPositions()
+                if playerCheckPos.x == mouseCol and playerCheckPos.y == mouseRow:
+                    taken = True
+            if self.moveableLocations[mouseRow][mouseCol] != -1 and not(taken):
                 self.moveTo.update(mouseCol, mouseRow)
                 return True
         return False

@@ -34,7 +34,7 @@ def getPlayerAndEnemyInformation():
         else:
             enemyInformation.append(c.ENEMY(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label))
     return playerInformation, enemyInformation
-def loadEnemies(enemyInfo, stageEnemies):
+def loadEnemies(enemyInfo, stageEnemies, stageWidth):
     enemies = []
     for enemyLoad in stageEnemies:
         enemyLabel = enemyLoad[0]
@@ -44,6 +44,7 @@ def loadEnemies(enemyInfo, stageEnemies):
             if enemyCheck.checkLabel(enemyLabel):
                 e = enemyCheck.copySelf()
                 e.updatePosition(pygame.math.Vector2(enemyCol, enemyRow))
+                e.getBaseFacingDir(stageWidth)
                 enemies.append(e)
                 break
     return enemies
@@ -81,7 +82,7 @@ for player in playerInfo:
     players.append(playerForLevel)
     rowPlace += 1
 # Initialise enemies as nothing, as no enemy agent information yet. This will eventually be loaded from the level information
-enemies = loadEnemies(enemyInfo, stages[0])
+enemies = loadEnemies(enemyInfo, stages[0], cols)
 #add 1 enemy if there are no enemies already so stage_completes can trigger
 if len(enemies) == 0 and len(enemyInfo) > 0:
     e = enemyInfo[0].copySelf()
@@ -252,6 +253,7 @@ activePlayer = 0
 # Start players
 for player in players:
     player.startTurn(cols, rows, obstacles, players, enemies)
+    player.getBaseFacingDir(cols)
 while running:
     updateSize = False
     # Checking for events
@@ -304,14 +306,14 @@ while running:
                     if not(playerClicked):
                         player = players[playerI]
                         playerPos, _ = player.getPositions()
-                        if playerPos.x == clickedCol and playerPos.y == clickedRow:
+                        if playerPos.x == clickedCol and playerPos.y == clickedRow and activePlayer != playerI:
                             playerClicked = True
                             activePlayer = playerI
-                            print(playerI)
+                            # print(playerI)
                 # If clicking a player, then the active player is changed, so do not move the position
                 if playerClicked:
                     continue
-                moveSuccessful = players[activePlayer].attemptToMove(clickedRow, clickedCol)
+                moveSuccessful = players[activePlayer].attemptToMove(clickedRow, clickedCol, players)
                 """ no: movement occurs at the end of a player turn, NOT when a position is clicked.
                 if moveSuccessful:
                     log_event("character_move",
@@ -327,7 +329,7 @@ while running:
                 # Only update the open spaces if the move was succesful
                 if moveSuccessful:
                     for player in players:
-                        player.getMoveableLocations(cols, rows, obstacles, players, enemies)
+                        player.getMoveableLocations(cols, rows, obstacles, players, enemies, False)
                     for enemy in enemies:
                         enemy.getMoveableLocations(cols, rows, obstacles, players, enemies)
         #TEMP: fullscreen adjustment
@@ -353,6 +355,7 @@ while running:
                 animatingMove = True
                 if active_side == "player":
                     for player in players:
+                        player.getMoveableLocations(cols, rows, obstacles, players, enemies, False)
                         player.getMovementPath()
                         moveFrame = 0
                 """
@@ -465,6 +468,7 @@ while running:
             if active_side == "enemy":
                 for enemy in enemies:
                     enemy.findOptimalMoveLocation(cols, rows, obstacles, players, enemies)
+                    enemy.getMoveableLocations(cols, rows, obstacles, players, enemies, False)
                     enemy.getMovementPath()
                     moveFrame = 0
                 animating = True
