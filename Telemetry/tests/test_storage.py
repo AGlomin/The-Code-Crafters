@@ -6,7 +6,7 @@ import telemetry.storage as storage
 def test_write_event_creates_and_writes_csv(tmp_path, monkeypatch):
     #using monkeypatch to avoid writing to the real csv
     #temporary csv path
-    test_file = tmp_path / "telemetry.csv"
+    test_file = tmp_path/"telemetry.csv"
 
     # temporarily changing file path
     monkeypatch.setattr(storage, "FILE_PATH", str(test_file))
@@ -14,6 +14,8 @@ def test_write_event_creates_and_writes_csv(tmp_path, monkeypatch):
     event = TelemetryEvent.create(
         event_type="character_attack",
         stage_id=1,
+        session_id="session1",
+        user_id="anon_user",
         payload={"damage": 5}
     )
     storage.write_event(event)
