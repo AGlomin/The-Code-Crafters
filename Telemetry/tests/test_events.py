@@ -4,15 +4,15 @@ import uuid
 from telemetry.events import TelemetryEvent
 
 def test_event_init_fields():
-    event= TelemetryEvent.create("character_attack",1, {"damage":5})
+    event= TelemetryEvent.create("character_attack",1,"s1","anon_user",{"damage":5})
     assert event.event_type=="character_attack"
     assert event.stage_id==1
     assert event.user_id=="anon_user"
     assert event.payload=={"damage":5}
 
 def test_session_id_unique():
-    event1=TelemetryEvent.create("event1",1,{})
-    event2=TelemetryEvent.create("event2",1,{})
+    event1=TelemetryEvent.create("event1",1,"s1", "u1",{})
+    event2=TelemetryEvent.create("event2",1,"s2", "u2",{})
     assert event1.session_id != event2.session_id
 
 def test_timestamp_autoset():
@@ -46,9 +46,8 @@ def test_event_type_wrong_type():
 
 def test_stage_id_wrong_type():
     with pytest.raises(TypeError):
-        TelemetryEvent.create("event", "wrong_stage", {})
+        TelemetryEvent.create("event", "wrong_stage","s1", "u1",{})
 
 def test_payload_wrong_type():
     with pytest.raises(TypeError):
-        TelemetryEvent.create("event", 1, "not_a_dict")
-#commit 
+        TelemetryEvent.create("event", 1,"s1","u1","not_a_dict")
