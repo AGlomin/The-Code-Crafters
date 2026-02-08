@@ -42,7 +42,7 @@ def test_mutable_defaults_independent():
 
 def test_event_type_wrong_type():
     with pytest.raises(TypeError):
-        TelemetryEvent.create(123, 1,"s1", "u1" {})
+        TelemetryEvent.create(123, 1,"s1", "u1", {})
 
 def test_stage_id_wrong_type():
     with pytest.raises(TypeError):
