@@ -1,7 +1,9 @@
 import csv
 import os
+import json
 
 FILE_PATH = "telemetry/telemetry.csv"
+
 FIELDS = [
     "timestamp",
     "event_type",
@@ -14,9 +16,11 @@ FIELDS = [
 
 
 def write_event(event):
+
+    os.makedirs("telemetry", exist_ok=True)
     file_exists = os.path.isfile(FILE_PATH)
 
-    with open(FILE_PATH, mode="a", newline="", encoding="utf-8") as f:
+    with open(FILE_PATH, "a", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=FIELDS)
 
         if not file_exists:
@@ -28,8 +32,8 @@ def write_event(event):
             "stage_id": event.stage_id,
             "session_id": event.session_id,
             "user_id": event.user_id,
-            "payload": event.payload,
-            "data_quality_flags": event.data_quality_flags,
+            "payload": json.dumps(event.payload),
+            "data_quality_flags": json.dumps(event.data_quality_flags),
         })
 
 
