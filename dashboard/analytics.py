@@ -15,7 +15,7 @@ def load_events():
         pass 
     return events
 
-def computer_funnel(events):
+def compute_funnel(events):
     funnel = defaultdict(int)
     for e in events:
         if etype == "stage_start":
