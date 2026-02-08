@@ -9,6 +9,10 @@ EVENT_TYPES = {
     "stage_fail",
     "stage_retry",
 
+    #turn lifecycle
+    "turn_start",
+    "turn_end",
+
     #player actions
     "character_move",
     "character_attack",
