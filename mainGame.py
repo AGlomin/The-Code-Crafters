@@ -10,6 +10,11 @@ pygame.init()
 # FOR TESTING
 session_id = "0 but a string"
 user_id = "1 but a string"
+
+# Difficulty Modifier. 0 = easy, 1 = normal, 2 = hard
+difficulty = 0
+difficultyAtkChange = 0.25
+difficultyModifier = 1 + (difficultyAtkChange * (difficulty - 1))
 # function to find the size of a tile, given the number of rows, columns, and size of the screen
 def findSize(screen, rows, cols):
     screenWidth = screen.get_width()
@@ -23,7 +28,7 @@ def createScreen(width, height, fullscreen = False):
     else:
         screen = pygame.display.set_mode((width, height), flags=pygame.RESIZABLE)
     return screen
-def getPlayerAndEnemyInformation():
+def getPlayerAndEnemyInformation(difficultyMod):
     playerInformation = []
     enemyInformation = []
     df = pd.read_csv("agent_information.csv")
@@ -33,7 +38,7 @@ def getPlayerAndEnemyInformation():
         elif row.player_agent:
             playerInformation.append(c.PLAYER(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label))
         else:
-            enemyInformation.append(c.ENEMY(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label))
+            enemyInformation.append(c.ENEMY(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label, difficultyMod))
     return playerInformation, enemyInformation
 def loadEnemies(enemyInfo, stageEnemies, stageWidth):
     enemies = []
@@ -73,7 +78,7 @@ left = (screenWidth - (size * cols)) // 2
 tiles = [[c.TILE(size, row, col, left + (col * size), top + (row * size), "tile") for col in range(cols)] for row in range(rows)]
 obstacles = [c.OBSTACLE(pygame.math.Vector2(obstacle[1], obstacle[0]), "obstacle") for obstacle in obstaclePlaces]
 # Get player and enemy information
-playerInfo, enemyInfo = getPlayerAndEnemyInformation()
+playerInfo, enemyInfo = getPlayerAndEnemyInformation(difficultyModifier)
 # Temporary: Assign each player a set position, PLAYER COPYING IS NEEDED STILL
 players = []
 rowPlace = 0

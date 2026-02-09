@@ -93,6 +93,7 @@ class AGENT:
         self.label = label
         self.movementPath = [] # default to blank to avoid issues
         self.framesPerTile = 8
+        self.attackMod = 1
     def getBaseFacingDir(self, stageWidth):
         self.faceRight = self.pos.x < stageWidth // 2
     # Returns true if the label is the same as own label, else returns false
@@ -101,7 +102,7 @@ class AGENT:
     def getLabel(self):
         return self.label
     def getAttack(self):
-        return self.atk
+        return round(self.atk * self.attackMod)
     def getAttackRange(self):
         return self.atkRange
     # Create a copy of the agent, keeping its class
@@ -311,7 +312,7 @@ class AGENT:
             agentPos, _ = agent.getPositions()
             if self.pos.distance_to(agentPos) <= self.atkRange:
                 attackedAgents.append(agent.getLabel())
-                agent.loseHP(self.atk)
+                agent.loseHP(round(self.atk * self.attackMod))
         return attackedAgents
     def loseHP(self, amount):
         # Always sets the HP to 0 as a minumum, and maxHP as a maximum
@@ -325,8 +326,11 @@ class AGENT:
         return self.label
 # Enemy Class: Class representing an enemy.
 class ENEMY(AGENT):
-    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label):
+    def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label, attackMod = 1):
         super().__init__(maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label)
+        self.attackMod = attackMod
+    def copySelf(self):
+        return type(self)(self.maxHP, self.baseAtk, self.atkRange, self.moveSpeed, self.pos, self.spritesheetName, self.label, self.attackMod)
     def findOptimalMoveLocation(self, gridWidth, gridHeight, obstacles, playerAgents, enemyAgents):
         self.getMoveableLocations(gridWidth, gridHeight, obstacles, playerAgents, enemyAgents)
         playerPositions = []
