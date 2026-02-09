@@ -8,7 +8,8 @@ import uuid
 from Telemetry.telemetry.logger import log_event
 pygame.init()
 # FOR TESTING
-session_id = 0
+session_id = "0 but a string"
+user_id = "1 but a string"
 # function to find the size of a tile, given the number of rows, columns, and size of the screen
 def findSize(screen, rows, cols):
     screenWidth = screen.get_width()
@@ -103,6 +104,8 @@ total_damage_taken = 0
 log_event(
     "session_start",
     stage_id,
+    session_id,
+    user_id,
     {   "session_id":session_id,
         "config_id": "balanced",
         "difficulty_label": "balanced"
@@ -112,6 +115,8 @@ log_event(
 log_event(
     "stage_start",
     stage_id,
+    session_id,
+    user_id,
     {   "session_id":session_id,
         "enemy_count": len(enemies),
         "grid_size": f"{rows}x{cols}"
@@ -121,6 +126,8 @@ log_event(
 log_event(
     "turn_start",
     stage_id,
+    session_id,
+    user_id,
     {   "session_id":session_id,
         "turn_number": turn_number,
         "active_side": active_side
@@ -187,6 +194,8 @@ def logAttack(agent, isPlayer, targets):
                 log_event(
                     "character_heal",
                     stage_id,
+                    session_id,
+                    user_id,
                     {
                         "healer_id": agentLabel,
                         "target_id": target,
@@ -198,6 +207,8 @@ def logAttack(agent, isPlayer, targets):
                 log_event(
                     "character_attack",
                     stage_id,
+                    session_id,
+                    user_id,
                     {   "session_id":session_id,
                         "attacker_id": agentLabel,
                         "target_id": target,
@@ -209,6 +220,8 @@ def logAttack(agent, isPlayer, targets):
             log_event(
                 "enemy_attack",
                 stage_id,
+                session_id,
+                user_id,
                 {   "session_id":session_id,
                     "enemy_id": agentLabel,
                     "target_id": target,
@@ -263,6 +276,8 @@ while running:
                 log_event(
                     "quit",
                     stage_id,
+                    session_id,
+                    user_id,
                     {   "session_id":session_id,
                         "turn_number": turn_number
                     }
@@ -270,6 +285,8 @@ while running:
                 log_event(
                     "stage_fail",
                     stage_id,
+                    session_id,
+                    user_id,
                     {   "session_id":session_id,
                         "turns_taken": turn_number,
                         "failure_reason": "window_closed"
@@ -278,6 +295,8 @@ while running:
                 log_event(
                     "session_end",
                     stage_id,
+                    session_id,
+                    user_id,
                     {   "session_id":session_id,
                         "stages_completed": 0
                     }
@@ -384,6 +403,8 @@ while running:
                 log_event(
                     "quit",
                     stage_id,
+                    session_id,
+                    user_id,
                     {   "session_id":session_id,
                         "turn_number": turn_number
                     }
@@ -391,6 +412,8 @@ while running:
                 log_event(
                     "stage_fail",
                     stage_id,
+                    session_id,
+                    user_id,
                     {   "session_id":session_id,
                         "turns_taken": turn_number,
                         "failure_reason": "quit"
@@ -399,6 +422,8 @@ while running:
                 log_event(
                     "session_end",
                     stage_id,
+                    session_id,
+                    user_id,
                     {   "session_id":session_id,
                         "stages_completed": 0
                     }
@@ -450,6 +475,8 @@ while running:
             log_event(
                     "turn_end", 
                     stage_id,
+                    session_id,
+                    user_id,
                     {
                     "session_id":session_id,
                     "turn_number":turn_number,
@@ -460,6 +487,8 @@ while running:
             log_event(
                 "turn_start",
                 stage_id,
+                session_id,
+                user_id,
                 {   "session_id":session_id,
                     "turn_number": turn_number,
                     "active_side": active_side
@@ -484,6 +513,8 @@ while running:
             log_event(
                 "stage_complete",
                 stage_id,
+                session_id,
+                user_id,
                 {   "session_id":session_id,
                     "turns_taken": turn_number,
                     "characters_alive": sum(p.findAlive() for p in players),
@@ -493,6 +524,8 @@ while running:
             log_event(
                 "session_end",
                 stage_id,
+                session_id,
+                user_id,
                 {   "session_id":session_id,
                     "stages_completed": 1
                 }
@@ -504,6 +537,8 @@ while running:
             log_event(
                 "stage_fail",
                 stage_id,
+                session_id,
+                user_id,
                 {   "session_id":session_id,
                     "turns_taken": turn_number,
                     "failure_reason": "all_players_defeated"
@@ -512,6 +547,8 @@ while running:
             log_event(
                 "session_end",
                 stage_id,
+                session_id,
+                user_id,
                 {   "session_id":session_id,
                     "stages_completed": 0
                 }

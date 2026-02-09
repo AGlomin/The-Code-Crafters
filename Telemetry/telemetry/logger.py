@@ -1,11 +1,24 @@
 try:
     from events import TelemetryEvent
+except:
+    try:
+        from telemetry.events import TelemetryEvent
+    except:
+        from Telemetry.telemetry.events import TelemetryEvent
+try:
     from validator import validate_event, detect_anomalies, TelemetryValidationError
+except:
+    try:
+        from telemetry.validator import validate_event, detect_anomalies, TelemetryValidationError
+    except:
+        from Telemetry.telemetry.validator import validate_event, detect_anomalies, TelemetryValidationError
+try:
     from storage import write_event
 except:
-    from telemetry.events import TelemetryEvent
-    from telemetry.validator import validate_event, detect_anomalies, TelemetryValidationError
-    from telemetry.storage import write_event
+    try:
+        from telemetry.storage import write_event
+    except:
+        from Telemetry.telemetry.storage import write_event
 
 
 def log_event(event_type, stage_id, session_id, user_id, payload):

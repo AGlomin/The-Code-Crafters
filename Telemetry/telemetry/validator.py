@@ -1,7 +1,10 @@
 try:
     from event_types import EVENT_TYPES
 except:
-    from telemetry.event_types import EVENT_TYPES
+    try:
+        from telemetry.event_types import EVENT_TYPES
+    except:
+        from Telemetry.telemetry.event_types import EVENT_TYPES
 
 
 class TelemetryValidationError(Exception):
