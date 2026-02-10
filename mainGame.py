@@ -87,15 +87,21 @@ for player in playerInfo:
     playerForLevel.updatePosition(pygame.math.Vector2(playerPlaces[rowPlace][1], playerPlaces[rowPlace][0]))
     players.append(playerForLevel)
     rowPlace += 1
-# Initialise enemies as nothing, as no enemy agent information yet. This will eventually be loaded from the level information
-enemies = loadEnemies(enemyInfo, stages[0], cols)
-#add 1 enemy if there are no enemies already so stage_completes can trigger
-if len(enemies) == 0 and len(enemyInfo) > 0:
-    e = enemyInfo[0].copySelf()
-    e.updatePosition(pygame.math.Vector2(cols - 1, 0))
-    enemies.append(e)
 #stage identifier
-stage_id = 1
+level_id = 1
+stage_id = 0
+
+def loadStage(stage_id, stages, enemyInfo): 
+    global enemies
+    # Initialise enemies as nothing, as no enemy agent information yet. This will eventually be loaded from the level information
+    enemies = loadEnemies(enemyInfo, stages[stage_id], cols)
+    #add 1 enemy if there are no enemies already so stage_completes can trigger
+    if len(enemies) == 0 and len(enemyInfo) > 0:
+        e = enemyInfo[0].copySelf()
+        e.updatePosition(pygame.math.Vector2(cols - 1, 0))
+        enemies.append(e)
+
+loadStage(stage_id, stages, enemyInfo)
 
 # Turn-based state
 turn_number = 1
@@ -108,7 +114,7 @@ total_damage_taken = 0
 # Emit session + stage start events
 log_event(
     "session_start",
-    stage_id,
+    level_id,
     session_id,
     user_id,
     {   "session_id":session_id,
@@ -119,7 +125,7 @@ log_event(
 
 log_event(
     "stage_start",
-    stage_id,
+    level_id,
     session_id,
     user_id,
     {   "session_id":session_id,
@@ -130,7 +136,7 @@ log_event(
 
 log_event(
     "turn_start",
-    stage_id,
+    level_id,
     session_id,
     user_id,
     {   "session_id":session_id,
@@ -180,7 +186,7 @@ def player_attack():
     damage_agent(target, damage)
     log_event(
         "character_attack",
-        stage_id,
+        level_id,
         {
             "attacker_id": getattr(attacker, "name", "player_0"),
             "target_id": getattr(target, "name", "enemy_0"),
@@ -198,7 +204,7 @@ def logAttack(agent, isPlayer, targets):
             if agentLabel == "medic":
                 log_event(
                     "character_heal",
-                    stage_id,
+                    level_id,
                     session_id,
                     user_id,
                     {
@@ -211,7 +217,7 @@ def logAttack(agent, isPlayer, targets):
             else:
                 log_event(
                     "character_attack",
-                    stage_id,
+                    level_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id,
@@ -224,7 +230,7 @@ def logAttack(agent, isPlayer, targets):
         else:
             log_event(
                 "enemy_attack",
-                stage_id,
+                level_id,
                 session_id,
                 user_id,
                 {   "session_id":session_id,
@@ -246,7 +252,7 @@ def enemy_attack():
     
     log_event(
         "enemy_attack",
-        stage_id,
+        level_id,
         {   "session_id":session_id,
             "enemy_id": getattr(enemy, "name", "enemy_0"),
             "target_id": getattr(target, "name", "player_0"),
@@ -280,7 +286,7 @@ while running:
             if stage_running:
                 log_event(
                     "quit",
-                    stage_id,
+                    level_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id,
@@ -289,7 +295,7 @@ while running:
                 )
                 log_event(
                     "stage_fail",
-                    stage_id,
+                    level_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id,
@@ -299,7 +305,7 @@ while running:
                 )
                 log_event(
                     "session_end",
-                    stage_id,
+                    level_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id,
@@ -341,7 +347,7 @@ while running:
                 """ no: movement occurs at the end of a player turn, NOT when a position is clicked.
                 if moveSuccessful:
                     log_event("character_move",
-                             stage_id,
+                             level_id,
                              {"session_id":session_id,
                              "character_id": players[activePlayer].getLabel(),
                              "to_row": clickedRow,
@@ -375,6 +381,7 @@ while running:
                 updateSize = True
             #advance turn by pressing SPACEBAR - will log turn advance after animation
             if event.key == pygame.K_SPACE and stage_running:
+                # print("space works") quantum glitch : didnt work, added this(changed nothing else), it started working (my code works.... why??????????)
                 animating = True
                 animatingMove = True
                 if active_side == "player":
@@ -382,7 +389,7 @@ while running:
                         player.getMoveableLocations(cols, rows, obstacles, players, enemies, False)
                         player.getMovementPath()
                         moveFrame = 0
-                """
+                        """
                 log_event(
                     "turn_end", 
                     stage_id{
@@ -395,7 +402,7 @@ while running:
                 advance_turn()
                 log_event(
                     "turn_start",
-                    stage_id,
+                    level_id,
                     {   "session_id":session_id,
                         "turn_number": turn_number,
                         "active_side": active_side
@@ -407,7 +414,7 @@ while running:
                 stage_running = False
                 log_event(
                     "quit",
-                    stage_id,
+                    level_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id,
@@ -416,7 +423,7 @@ while running:
                 )
                 log_event(
                     "stage_fail",
-                    stage_id,
+                    level_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id,
@@ -426,7 +433,7 @@ while running:
                 )
                 log_event(
                     "session_end",
-                    stage_id,
+                    level_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id,
@@ -444,7 +451,6 @@ while running:
             if event.key == pygame.K_e and stage_running and active_side == "enemy":
                 enemy_attack()
             """
-    # TODO: Deal with gameplay vvv
     if animating:
         animatingAgents = players if active_side == "player" else enemies
         # Animate Movement
@@ -479,7 +485,7 @@ while running:
             animatingMove = True
             log_event(
                     "turn_end", 
-                    stage_id,
+                    level_id,
                     session_id,
                     user_id,
                     {
@@ -491,7 +497,7 @@ while running:
             advance_turn()
             log_event(
                 "turn_start",
-                stage_id,
+                level_id,
                 session_id,
                 user_id,
                 {   "session_id":session_id,
@@ -514,10 +520,10 @@ while running:
     #stage-end conditions (succeed/fail) - Moved this up, better to deal with this before rendering, as it's technically part of the gameplay 🙂
     if stage_running:
         if stage_won(enemies):
-            stage_running = False
+            
             log_event(
                 "stage_complete",
-                stage_id,
+                level_id,
                 session_id,
                 user_id,
                 {   "session_id":session_id,
@@ -526,22 +532,28 @@ while running:
                     "total_damage_taken": total_damage_taken
                 }
             )
-            log_event(
-                "session_end",
-                stage_id,
-                session_id,
-                user_id,
-                {   "session_id":session_id,
-                    "stages_completed": 1
-                }
-            )
-            running = False
+            stage_id+=1
+            if stage_id == 3:
+                log_event(
+                    "session_end",
+                    level_id,
+                    session_id,
+                    user_id,
+                    {   "session_id":session_id,
+                        "stages_completed": 1
+                    }
+                )
+                running = False
+            else:            
+                loadStage(stage_id, stages, enemyInfo)
+
+            # running = False
     
         elif stage_lost(players):
             stage_running = False
             log_event(
                 "stage_fail",
-                stage_id,
+                level_id,
                 session_id,
                 user_id,
                 {   "session_id":session_id,
@@ -551,7 +563,7 @@ while running:
             )
             log_event(
                 "session_end",
-                stage_id,
+                level_id,
                 session_id,
                 user_id,
                 {   "session_id":session_id,
