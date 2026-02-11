@@ -1,6 +1,6 @@
 import pytest
-from telemetry.events import TelemetryEvent
-from telemetry.validator import validate_event, TelemetryValidationError,detect_anomalies
+from Telemetry.telemetry.events import TelemetryEvent
+from Telemetry.telemetry.validator import validate_event, TelemetryValidationError,detect_anomalies
 
 def test_valid_event():   
     event = TelemetryEvent.create(
@@ -11,7 +11,9 @@ def test_valid_event():
         payload={
         "attacker_id": "player_1",
         "target_id": "enemy_1",
-        "damage": 5}
+        "damage": 5,
+        "attack_range": 1
+        }
     )
     assert validate_event(event) is True
 
@@ -33,7 +35,11 @@ def test_negative_stage_id():
         stage_id=-1,
         session_id="session1",
         user_id="user1",
-        payload={}
+        payload={
+            "attacker_id": "player_1",
+            "target_id": "enemy_1",
+            "damage": 5,
+            "attack_range": 1}
     )
     with pytest.raises(TelemetryValidationError):
         validate_event(event)
@@ -44,7 +50,11 @@ def test_negative_damage():
         stage_id=1,
         session_id="session1",
         user_id="user1",
-        payload={"damage": -3}
+        payload={
+            "attacker_id": "player_1",
+            "target_id": "enemy_1",
+            "damage": -3,
+            "attack_range": 1}
     )
     with pytest.raises(TelemetryValidationError):
         validate_event(event)
@@ -76,7 +86,11 @@ def test_no_anomalies():
         stage_id=1,
         session_id="session1",
         user_id="user1",
-        payload={"damage": 5}
+        payload={
+            "attacker_id": "player_1",
+            "target_id": "enemy_1",
+            "damage": 5,
+            "attack_range": 1}
     )
     result= detect_anomalies(event)
     assert result.data_quality_flags == []
