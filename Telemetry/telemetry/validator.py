@@ -42,6 +42,8 @@ def validate_event(event):
 
 
 def detect_anomalies(event):
+    if not hasattr(event, "data_quality_flags") or event.data_quality_flags is None:
+    event.data_quality_flags = []
 
     if event.event_type == "stage_complete":
         if event.payload.get("turns_taken", 1) == 0:
@@ -55,3 +57,4 @@ def detect_anomalies(event):
         event.data_quality_flags.append("invalid_stage_complete")
 
     return event
+
