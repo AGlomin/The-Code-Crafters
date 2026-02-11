@@ -324,6 +324,8 @@ class AGENT:
         return 1 if self.HP > 0 else 0
     def getLabel(self):
         return self.label
+    def setLabel(self, label):
+        self.label = label
 # Enemy Class: Class representing an enemy.
 class ENEMY(AGENT):
     def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label, attackMod = 1):
@@ -370,6 +372,47 @@ class ENEMY(AGENT):
             return
         # If there are no targets in range, move towards the closest target. TEMP: Base this on average distance to players, no pathfinding
         self.moveTo.update(closestPos)
+    def spawnFixScan(self, lookingFor, possibleLocations, openLocations):
+        rowI = 0
+        for row in possibleLocations:
+            colI = 0
+            for col in row:
+                if col == lookingFor:
+                    # Scan above, left, right, down
+                    for scanChange in [[-1, 0], [0, -1], [0, 1], [1, 0]]:
+                        rowChange, colChange = rowI + scanChange[0], colI + scanChange[1]
+                        # check whether in range
+                        if 0 <= rowChange and rowChange < len(possibleLocations) and 0<= colChange and colChange < len(row):
+                            # Check that the area is open, and move there
+                            if openLocations[rowChange][colChange] and possibleLocations[rowChange][colChange] == -1:
+                                return pygame.Vector2((colChange, rowChange))
+                            possibleLocations[rowChange][colChange] = lookingFor + 1
+                colI += 1
+            rowI += 1
+        return self.spawnFixScan(lookingFor + 1, possibleLocations, openLocations)
+    def fixSpawn(self, gridWidth, gridHeight, obstacles, playerAgents, enemyAgents):
+        # Scan around, find nearest that is not occupied by a player, obstacle or enemy
+        openLocations = [[True for col in range(gridWidth)] for row in range(gridHeight)]
+        for obstacle in obstacles:
+            obstaclePos = obstacle.getPosition()
+            obstacleRow, obstacleCol = obstaclePos.y, obstaclePos.x
+            openLocations[round(obstacleRow)][round(obstacleCol)] = False
+        # Update the environment for player agents, to prevent overlaps
+        for player in playerAgents:
+            playerPos, _ = player.getPositions()
+            openLocations[round(playerPos.y)][round(playerPos.x)] = False
+        # Update the environment for enemy agents, to prevent overlaps
+        for enemy in enemyAgents:
+            enemyPos, _ = enemy.getPositions()
+            # Only update env if the start and end positions to not match own start and end positions
+            if enemy.getLabel() == self.label:
+                continue
+            openLocations[round(enemyPos.y)][round(enemyPos.x)] = False
+        if openLocations[round(self.pos.y)][round(self.pos.x)]:
+            return
+        possibleLocations = [[-1 for col in range(gridWidth)] for row in range(gridHeight)]
+        possibleLocations[round(self.pos.y)][round(self.pos.x)] = 0
+        self.pos.update(self.spawnFixScan(0, possibleLocations, openLocations).copy())
 # Player Class: Class representing a player character. NOTE: Medic does NOT use this class, instead uses a child class of player
 class PLAYER(AGENT):
     def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label):

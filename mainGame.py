@@ -40,17 +40,24 @@ def getPlayerAndEnemyInformation(difficultyMod):
         else:
             enemyInformation.append(c.ENEMY(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label, difficultyMod))
     return playerInformation, enemyInformation
-def loadEnemies(enemyInfo, stageEnemies, stageWidth):
+def loadEnemies(enemyInfo, stageEnemies, stageWidth, stageHeight, players):
     enemies = []
+    enemyLabels = {}
     for enemyLoad in stageEnemies:
         enemyLabel = enemyLoad[0]
         enemyRow = enemyLoad[1]
         enemyCol = enemyLoad[2]
         for enemyCheck in enemyInfo:
             if enemyCheck.checkLabel(enemyLabel):
+                if enemyLabel in enemyLabels.keys():
+                    enemyLabels[enemyLabel] += 1
+                else:
+                    enemyLabels[enemyLabel] = 0
                 e = enemyCheck.copySelf()
                 e.updatePosition(pygame.math.Vector2(enemyCol, enemyRow))
+                e.fixSpawn(stageWidth, stageHeight, obstacles, players, enemies)
                 e.getBaseFacingDir(stageWidth)
+                e.setLabel(f"{enemyLabel}.{enemyLabels[enemyLabel]}")
                 enemies.append(e)
                 break
     return enemies
@@ -70,7 +77,8 @@ oldHeight = screenHeight
 rows = 4
 cols = 5
 """
-rows, cols, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol, obstaclePlaces, stages = LevelHandler.loadLevel("levels/levelTest.txt")
+levelNumber = 1
+rows, cols, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol, obstaclePlaces, stages = LevelHandler.loadLevel(f"levels/level{levelNumber}.txt")
 playerPlaces = [[brawlerRow, brawlerCol], [bomberRow, bomberCol], [medicRow, medicCol]]
 size = findSize(screen, rows, cols)
 top = (screenHeight - (size * rows)) // 2
@@ -94,11 +102,13 @@ stage_id = 0
 def loadStage(stage_id, stages, enemyInfo): 
     global enemies
     # Initialise enemies as nothing, as no enemy agent information yet. This will eventually be loaded from the level information
-    enemies = loadEnemies(enemyInfo, stages[stage_id], cols)
+    enemies = loadEnemies(enemyInfo, stages[stage_id], cols, rows, players)
     #add 1 enemy if there are no enemies already so stage_completes can trigger
     if len(enemies) == 0 and len(enemyInfo) > 0:
         e = enemyInfo[0].copySelf()
         e.updatePosition(pygame.math.Vector2(cols - 1, 0))
+        e.fixSpawn(cols, rows, obstacles, players, enemies)
+        e.getBaseFacingDir(cols)
         enemies.append(e)
 
 loadStage(stage_id, stages, enemyInfo)
@@ -480,6 +490,7 @@ while running:
                 else:
                     targets = agent.attack(players)
                     logAttack(agent, agent.getLabel() == "medic", targets)
+            # Maybe I should animate the damage taken?
             animating = False
             movementDone = False
             animatingMove = True
