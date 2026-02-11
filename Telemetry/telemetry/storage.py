@@ -17,7 +17,7 @@ FIELDS = [
 
 def write_event(event):
 
-    os.makedirs("telemetry", exist_ok=True)
+    os.makedirs(os.path.dirname(FILE_PATH) or ".", exist_ok=True)
     file_exists = os.path.isfile(FILE_PATH)
 
     with open(FILE_PATH, "a", newline="", encoding="utf-8") as f:
