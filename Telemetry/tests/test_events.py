@@ -1,7 +1,7 @@
 import pytest
 import time
 import uuid
-from telemetry.events import TelemetryEvent
+from Telemetry.telemetry.events import TelemetryEvent
 
 def test_event_init_fields():
     event= TelemetryEvent.create("character_attack",1,"s1","anon_user",{"damage":5})
@@ -10,10 +10,10 @@ def test_event_init_fields():
     assert event.user_id=="anon_user"
     assert event.payload=={"damage":5}
 
-def test_session_id_unique():
-    event1=TelemetryEvent.create("event1",1,"s1", "u1",{})
-    event2=TelemetryEvent.create("event2",1,"s2", "u2",{})
-    assert event1.session_id != event2.session_id
+def test_event_id_unique():
+    event1 = TelemetryEvent.create("event", 1, "s1", "u1", {})
+    event2 = TelemetryEvent.create("event", 1, "s1", "u1", {})
+    assert event1.event_id != event2.event_id
 
 def test_timestamp_autoset():
     before=time.time()
