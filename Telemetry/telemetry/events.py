@@ -11,6 +11,7 @@ class TelemetryEvent:
     session_id: str
     user_id: str
 
+    event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     timestamp: float = field(default_factory=time.time)
     payload: Dict[str, Any] = field(default_factory=dict)
     data_quality_flags: List[str] = field(default_factory=list)
