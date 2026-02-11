@@ -1,6 +1,6 @@
 import csv
-from telemetry.events import TelemetryEvent
-import telemetry.storage as storage
+from Telemetry.telemetry.events import TelemetryEvent
+import Telemetry.telemetry.storage as storage
 
 
 def test_write_event_creates_and_writes_csv(tmp_path, monkeypatch):
@@ -16,7 +16,11 @@ def test_write_event_creates_and_writes_csv(tmp_path, monkeypatch):
         stage_id=1,
         session_id="session1",
         user_id="anon_user",
-        payload={"damage": 5}
+        payload={
+            "attacker_id": "player_1",
+            "target_id": "enemy_1",
+            "damage": 5,
+            "attack_range": 1}
     )
     storage.write_event(event)
   
@@ -28,8 +32,13 @@ def test_write_event_creates_and_writes_csv(tmp_path, monkeypatch):
 
     assert len(rows) == 1
     row = rows[0]
-
+    assert "event_type" in row
+    assert "stage_id" in row
+    assert "session_id" in row
+    assert "user_id" in row
     
     assert row["event_type"] == "character_attack"
     assert row["stage_id"] == "1"  
     assert row["user_id"] == "anon_user"
+    assert row["session_id"] == "session1"
+
