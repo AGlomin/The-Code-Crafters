@@ -348,7 +348,7 @@ while running:
                     if not(playerClicked):
                         player = players[playerI]
                         playerPos, _ = player.getPositions()
-                        if playerPos.x == clickedCol and playerPos.y == clickedRow and activePlayer != playerI:
+                        if playerPos.x == clickedCol and playerPos.y == clickedRow and activePlayer != playerI and player.findAlive() == 1:
                             playerClicked = True
                             activePlayer = playerI
                             # print(playerI)
@@ -613,7 +613,7 @@ while running:
     # Render player agents
     for playerI in range(len(players)):
         player = players[playerI]
-        player.render(screen, tiles, frame, moveFrame, active_side == "player" and not(animating), True, activePlayer == playerI)
+        player.render(screen, tiles, frame, moveFrame, active_side == "player" and not(animating) and player.findAlive() == 1, True, activePlayer == playerI)
     # Render enemy agents
     for enemy in enemies:
         enemy.render(screen, tiles, frame, moveFrame)
