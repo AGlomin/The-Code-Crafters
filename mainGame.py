@@ -275,12 +275,14 @@ clock = pygame.time.Clock()
 dt = 0
 frame = 0
 moveFrame = 0
-
+damageFrame = 0
 #Frames per cycle: number of frames per animation cycle
 framesPerCycle = 8
+framesPerDamage = 16
 animating = False
 animatingMove = False
 movementDone = False
+damageLogged = False
 #game loop
 running = True
 activePlayer = 0
@@ -482,52 +484,62 @@ while running:
                 animatingMove = False
         # Animate Attack
         else:
-            for agent in animatingAgents:
-                if active_side == "player" and agent.getLabel() != "medic":
-                    targets = agent.attack(enemies)
-                    logAttack(agent, True, targets)
-                # This can be used for both medic and enemies, since it will cause medic to heal the other players
-                else:
-                    targets = agent.attack(players)
-                    logAttack(agent, agent.getLabel() == "medic", targets)
-            # Maybe I should animate the damage taken?
-            animating = False
-            movementDone = False
-            animatingMove = True
-            log_event(
-                    "turn_end", 
-                    level_id,
-                    session_id,
-                    user_id,
-                    {
-                    "session_id":session_id,
-                    "turn_number":turn_number,
-                    "active_side": active_side
-                    }
-                )
-            advance_turn()
-            log_event(
-                "turn_start",
-                level_id,
-                session_id,
-                user_id,
-                {   "session_id":session_id,
-                    "turn_number": turn_number,
-                    "active_side": active_side
-                }
-            )
-            if active_side == "enemy":
-                for enemy in enemies:
-                    enemy.findOptimalMoveLocation(cols, rows, obstacles, players, enemies)
-                    enemy.getMoveableLocations(cols, rows, obstacles, players, enemies, False)
-                    enemy.getMovementPath()
-                    moveFrame = 0
-                animating = True
-                for player in players:
-                    player.endTurn()
+            if damageLogged:
+                damageFrame += 1
+                if damageFrame == framesPerDamage:
+                    for player in players:
+                        player.matchCurrToPrevHP()
+                    for enemy in enemies:
+                        enemy.matchCurrToPrevHP()
+                    damageLogged = False
+                    animating = False
+                    movementDone = False
+                    animatingMove = True
+                    log_event(
+                            "turn_end", 
+                            level_id,
+                            session_id,
+                            user_id,
+                            {
+                            "session_id":session_id,
+                            "turn_number":turn_number,
+                            "active_side": active_side
+                            }
+                        )
+                    advance_turn()
+                    log_event(
+                        "turn_start",
+                        level_id,
+                        session_id,
+                        user_id,
+                        {   "session_id":session_id,
+                            "turn_number": turn_number,
+                            "active_side": active_side
+                        }
+                    )
+                    if active_side == "enemy":
+                        for enemy in enemies:
+                            enemy.findOptimalMoveLocation(cols, rows, obstacles, players, enemies)
+                            enemy.getMoveableLocations(cols, rows, obstacles, players, enemies, False)
+                            enemy.getMovementPath()
+                            moveFrame = 0
+                        animating = True
+                        for player in players:
+                            player.endTurn()
+                    else:
+                        for player in players:
+                            player.startTurn(cols, rows, obstacles, players, enemies)
             else:
-                for player in players:
-                    player.startTurn(cols, rows, obstacles, players, enemies)
+                for agent in animatingAgents:
+                    if active_side == "player" and agent.getLabel() != "medic":
+                        targets = agent.attack(enemies)
+                        logAttack(agent, True, targets)
+                    # This can be used for both medic and enemies, since it will cause medic to heal the other players
+                    else:
+                        targets = agent.attack(players)
+                        logAttack(agent, agent.getLabel() == "medic", targets)
+                damageFrame = 0
+                damageLogged = True
     #stage-end conditions (succeed/fail) - Moved this up, better to deal with this before rendering, as it's technically part of the gameplay 🙂
     if stage_running:
         if stage_won(enemies):
@@ -604,10 +616,10 @@ while running:
     # HP Rendered after everything else rendered, to allow it to be shown on top of everything else
     # Render HP of all player agents
     for player in players:
-        player.renderHP(screen, tiles, moveFrame)
+        player.renderHP(screen, tiles, moveFrame, damageFrame)
     # Render HP of all enemy agents
     for enemy in enemies:
-        enemy.renderHP(screen, tiles, moveFrame)
+        enemy.renderHP(screen, tiles, moveFrame, damageFrame)
     pygame.display.flip()
     # Update time and frame
     dt = clock.tick(30)

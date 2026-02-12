@@ -65,6 +65,7 @@ class AGENT:
     def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label):
         self.maxHP = maxHP
         self.HP = maxHP
+        self.prevHP = maxHP
         self.baseAtk = baseAtk
         self.atk = baseAtk
         self.atkRange = atkRange
@@ -93,6 +94,7 @@ class AGENT:
         self.label = label
         self.movementPath = [] # default to blank to avoid issues
         self.framesPerTile = 8
+        self.framesForDamage = 16
         self.attackMod = 1
     def getBaseFacingDir(self, stageWidth):
         self.faceRight = self.pos.x < stageWidth // 2
@@ -211,12 +213,15 @@ class AGENT:
                 screen.blit(activeScaled, (xRender, yRender))
 
     # Render the HP bar of the agent
-    def renderHP(self, screen, tiles, moveFrame):
+    def renderHP(self, screen, tiles, moveFrame, damageFrame):
         # Only run if the HP bar was successfully loaded
         if self.hpBar == None:
             return
         xRender, yRender, sizeRender, _ = self.getRenderPosAndSize(tiles, moveFrame)
-        hpPercentage = self.HP / self.maxHP
+        if self.HP == self.prevHP:
+            hpPercentage = self.HP / self.maxHP
+        else:
+            hpPercentage = pygame.math.lerp(self.prevHP / self.maxHP, self.HP / self.maxHP, damageFrame / self.framesForDamage)
         hpColor = 2 * hpPercentage
         if hpColor > 1:
             hpColor -= 1
@@ -319,13 +324,15 @@ class AGENT:
         self.HP = min(self.maxHP, max(0, self.HP - amount))
     def setHP(self, amount):
         self.HP = amount
-    # Return 1 if the agent is alive, else 0
+    # Return 1 if the agent is alive, else 0. Use previous to allow for animation
     def findAlive(self):
-        return 1 if self.HP > 0 else 0
+        return 1 if self.prevHP > 0 else 0
     def getLabel(self):
         return self.label
     def setLabel(self, label):
         self.label = label
+    def matchCurrToPrevHP(self):
+        self.prevHP = self.HP
 # Enemy Class: Class representing an enemy.
 class ENEMY(AGENT):
     def __init__ (self, maxHP, baseAtk, atkRange, moveSpeed, pos, spritesheetName, label, attackMod = 1):
