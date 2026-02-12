@@ -537,13 +537,14 @@ while running:
                             player.startTurn(cols, rows, obstacles, players, enemies)
             else:
                 for agent in animatingAgents:
-                    if active_side == "player" and agent.getLabel() != "medic":
-                        targets = agent.attack(enemies)
-                        logAttack(agent, True, targets)
-                    # This can be used for both medic and enemies, since it will cause medic to heal the other players
-                    else:
-                        targets = agent.attack(players)
-                        logAttack(agent, agent.getLabel() == "medic", targets)
+                    if agent.findAlive() == 1:
+                        if active_side == "player" and agent.getLabel() != "medic":
+                            targets = agent.attack(enemies)
+                            logAttack(agent, True, targets)
+                        # This can be used for both medic and enemies, since it will cause medic to heal the other players
+                        else:
+                            targets = agent.attack(players)
+                            logAttack(agent, agent.getLabel() == "medic", targets)
                 damageFrame = 0
                 damageLogged = True
     #stage-end conditions (succeed/fail) - Moved this up, better to deal with this before rendering, as it's technically part of the gameplay 🙂
