@@ -165,7 +165,7 @@ def get_hp(agent):
 """
 def stage_won(enemies):
     #Win: all enemies defeated (requires at least 1 enemy)
-    return len(enemies) > 0 and all(e.findAlive() == 0 for e in enemies)
+    return (len(enemies) > 0 and all(e.findAlive() == 0 for e in enemies)) or len(enemies) == 0
 
 def stage_lost(players):
     #Fail: all players defeated
@@ -489,8 +489,14 @@ while running:
                 if damageFrame == framesPerDamage:
                     for player in players:
                         player.matchCurrToPrevHP()
+                    enemiesAfterTurn = []
                     for enemy in enemies:
                         enemy.matchCurrToPrevHP()
+                        # DELETE IF HP IS 0
+                        if enemy.findAlive() == 1:
+                            enemiesAfterTurn.append(enemy)
+                        # else log enemy defeated?
+                    enemies = enemiesAfterTurn.copy()
                     damageLogged = False
                     animating = False
                     movementDone = False
