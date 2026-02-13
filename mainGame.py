@@ -77,7 +77,8 @@ oldHeight = screenHeight
 rows = 4
 cols = 5
 """
-levelNumber = 1
+levelNumber = 0
+
 rows, cols, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol, obstaclePlaces, stages = LevelHandler.loadLevel(f"levels/level{levelNumber}.txt")
 playerPlaces = [[brawlerRow, brawlerCol], [bomberRow, bomberCol], [medicRow, medicCol]]
 size = findSize(screen, rows, cols)
@@ -95,8 +96,10 @@ for player in playerInfo:
     playerForLevel.updatePosition(pygame.math.Vector2(playerPlaces[rowPlace][1], playerPlaces[rowPlace][0]))
     players.append(playerForLevel)
     rowPlace += 1
+
+
 #stage identifier
-level_id = 1
+level_id = 0
 stage_id = 0
 
 def loadStage(stage_id, stages, enemyInfo): 
@@ -564,16 +567,48 @@ while running:
             )
             stage_id+=1
             if stage_id == 3:
-                log_event(
-                    "session_end",
-                    level_id,
-                    session_id,
-                    user_id,
-                    {   "session_id":session_id,
-                        "stages_completed": 1
-                    }
-                )
-                running = False
+                # try to load next level, game ends if file doesnt exist
+                try :
+                    levelNumber+=1
+                    rows, cols, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol, obstaclePlaces, stages = LevelHandler.loadLevel(f"levels/level{levelNumber}.txt")
+                    
+                #If next level file doesnt exist
+                except FileNotFoundError :
+                    log_event(
+                        "session_end",
+                        level_id,
+                        session_id,
+                        user_id,
+                        {   "session_id":session_id,
+                            "stages_completed": 1
+                        }
+                    )
+                    running = False
+                
+                #file exists, -> load Stage 0 for next Level
+                level_id+=1
+                stage_id=0
+
+                #duplicate code might want to make a function
+                playerPlaces = [[brawlerRow, brawlerCol], [bomberRow, bomberCol], [medicRow, medicCol]]
+                size = findSize(screen, rows, cols)
+                top = (screenHeight - (size * rows)) // 2
+                left = (screenWidth - (size * cols)) // 2
+                tiles = [[c.TILE(size, row, col, left + (col * size), top + (row * size), "tile") for col in range(cols)] for row in range(rows)]
+                obstacles = [c.OBSTACLE(pygame.math.Vector2(obstacle[1], obstacle[0]), "obstacle") for obstacle in obstaclePlaces]
+                # Get player and enemy information
+                playerInfo, enemyInfo = getPlayerAndEnemyInformation(difficultyModifier)
+                # Temporary: Assign each player a set position, PLAYER COPYING IS NEEDED STILL
+                players = []
+                rowPlace = 0
+                for player in playerInfo:
+                    playerForLevel = player.copySelf()
+                    playerForLevel.updatePosition(pygame.math.Vector2(playerPlaces[rowPlace][1], playerPlaces[rowPlace][0]))
+                    players.append(playerForLevel)
+                    rowPlace += 1
+
+                loadStage(stage_id, stages, enemyInfo)
+                
             else:            
                 loadStage(stage_id, stages, enemyInfo)
 
