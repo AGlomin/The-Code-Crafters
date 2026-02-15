@@ -324,7 +324,7 @@ while running:
                     session_id,
                     user_id,
                     {   "session_id":session_id,
-                        "stages_completed": 0
+                        "stages_completed": (3*level_id + stage_id)
                     }
                 )
             running = False
@@ -452,7 +452,7 @@ while running:
                     session_id,
                     user_id,
                     {   "session_id":session_id,
-                        "stages_completed": 0
+                        "stages_completed": (3*level_id + stage_id)
                     }
                 )
                 running = False
@@ -580,7 +580,7 @@ while running:
                         session_id,
                         user_id,
                         {   "session_id":session_id,
-                            "stages_completed": 1
+                            "stages_completed": (3*level_id + stage_id)
                         }
                     )
                     running = False
@@ -608,10 +608,31 @@ while running:
                     rowPlace += 1
 
                 loadStage(stage_id, stages, enemyInfo)
+
+                log_event(
+                    "stage_start",
+                    level_id,
+                    session_id,
+                    user_id,
+                    {   "session_id":session_id, 
+                        "enemy_count": len(enemies),
+                        "grid_size": f"{rows}x{cols}"
+                    }
+                )
                 
             else:            
                 loadStage(stage_id, stages, enemyInfo)
 
+                log_event(
+                    "stage_start",
+                    level_id,
+                    session_id,
+                    user_id,
+                    {   "session_id":session_id, 
+                        "enemy_count": len(enemies),
+                        "grid_size": f"{rows}x{cols}"
+                    }
+                )
             # running = False
     
         elif stage_lost(players):
@@ -632,7 +653,7 @@ while running:
                 session_id,
                 user_id,
                 {   "session_id":session_id,
-                    "stages_completed": 0
+                    "stages_completed": (3*level_id + stage_id)
                 }
             )
             running = False
