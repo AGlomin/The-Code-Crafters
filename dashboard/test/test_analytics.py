@@ -1,4 +1,6 @@
-from analytics import compute_funnel
+import pytest
+from dashboard.analytics import compute_funnel, stage_failures
+#funnel tests
 def test_compute_win_and_fail():
     events=[
         {"event_type":"stage_start"},
@@ -34,6 +36,29 @@ def test_compute_no_start():
 
     assert funnel["Stage Starts"]==0
     assert funnel["Stage Fails"]==1
-    assert "Completion Rate %" not in funnel
-    
+    assert funnel["Completion Rate %"]== 0
+#--------------------------------------------
+##Stage failures tests
+def test_stage_failures_mult_stages():
+    events=[
+        {"event_type":"stage_fail","stage_id":1},
+        {"event_type":"stage_fail","stage_id":1},
+        {"event_type":"stage_fail","stage_id":2},
+        {"event_type":"stage_start","stage_id":2},
+        {"event_type":"stage_complete","stage_id":2}]
+    failures=stage_failures(events)
+    assert failures[1]==2
+    assert failures[2]==1
+    assert len(failures)==2
+def test_stage_no_failures():
+    events=[
+        {"event_type":"stage_start","stage_id":1},
+        {"event_type":"stage_complete","stage_id":1}]
+    failures=stage_failures(events)
+    assert failures == {}
+
+
+
+
+
 
