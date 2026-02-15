@@ -17,8 +17,14 @@ Telemetry Logging of game play
 
 ## REQUIRED MODULES
 Pygame  
-Pandas  
-Tkinter  
+
+Pandas
+
+Tkinter 	
+
+math
+
+time
 
 ## Team Members
 Aislin - Project Lead
