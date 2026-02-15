@@ -1,0 +1,3 @@
+1771143117.3898127,session_start,0,0 but a string,1 but a string,"{""session_id"": ""0 but a string"", ""config_id"": ""balanced"", ""difficulty_label"": ""balanced""}",[]
+1771143117.390003,stage_start,0,0 but a string,1 but a string,"{""session_id"": ""0 but a string"", ""enemy_count"": 1, ""grid_size"": ""5x6""}",[]
+1771143117.3901176,turn_start,0,0 but a string,1 but a string,"{""session_id"": ""0 but a string"", ""turn_number"": 1, ""active_side"": ""player""}",[]
