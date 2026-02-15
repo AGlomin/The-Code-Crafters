@@ -1,4 +1,4 @@
-from telemetry.logger import log_event
+from Telemetry.telemetry.logger import log_event
 import uuid
 
 session_id = str(uuid.uuid4())
