@@ -1,4 +1,4 @@
-from telemetry.events import TelemetryEvent
+from Telemetry.telemetry.events import TelemetryEvent
 
 def seed_win_session():
     return[TelemetryEvent.create("session_start" ,1,"s_win","user1",{}),
