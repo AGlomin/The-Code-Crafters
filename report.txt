@@ -1,0 +1,33 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.1, pytest-9.0.1, pluggy-1.6.0 -- /usr/local/py-utils/venvs/pytest/bin/python
+cachedir: .pytest_cache
+rootdir: /workspaces/The-Code-Crafters
+plugins: anyio-4.11.0
+collecting ... collected 24 items
+
+Telemetry/tests/test_events.py::test_event_init_fields PASSED            [  4%]
+Telemetry/tests/test_events.py::test_event_id_unique PASSED              [  8%]
+Telemetry/tests/test_events.py::test_timestamp_autoset PASSED            [ 12%]
+Telemetry/tests/test_events.py::test_default_payload PASSED              [ 16%]
+Telemetry/tests/test_events.py::test_default_data_quality_flags PASSED   [ 20%]
+Telemetry/tests/test_events.py::test_mutable_defaults_independent PASSED [ 25%]
+Telemetry/tests/test_events.py::test_event_type_wrong_type PASSED        [ 29%]
+Telemetry/tests/test_events.py::test_stage_id_wrong_type PASSED          [ 33%]
+Telemetry/tests/test_events.py::test_payload_wrong_type PASSED           [ 37%]
+Telemetry/tests/test_funnel.py::test_win_sessions_funnel PASSED          [ 41%]
+Telemetry/tests/test_funnel.py::test_fail_sessions_funnel PASSED         [ 45%]
+Telemetry/tests/test_storage.py::test_write_event_creates_and_writes_csv PASSED [ 50%]
+Telemetry/tests/test_validation.py::test_valid_event PASSED              [ 54%]
+Telemetry/tests/test_validation.py::test_invalid_event_type PASSED       [ 58%]
+Telemetry/tests/test_validation.py::test_negative_stage_id PASSED        [ 62%]
+Telemetry/tests/test_validation.py::test_negative_damage PASSED          [ 66%]
+Telemetry/tests/test_validation.py::test_instant_completion_flag PASSED  [ 70%]
+Telemetry/tests/test_validation.py::test_excessive_retries_flag PASSED   [ 75%]
+Telemetry/tests/test_validation.py::test_no_anomalies PASSED             [ 79%]
+dashboard/test/test_analytics.py::test_compute_win_and_fail PASSED       [ 83%]
+dashboard/test/test_analytics.py::test_compute_all_win PASSED            [ 87%]
+dashboard/test/test_analytics.py::test_compute_no_start PASSED           [ 91%]
+dashboard/test/test_analytics.py::test_stage_failures_mult_stages PASSED [ 95%]
+dashboard/test/test_analytics.py::test_stage_no_failures PASSED          [100%]
+
+============================== 24 passed in 0.10s ==============================
