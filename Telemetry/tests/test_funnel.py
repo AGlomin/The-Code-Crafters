@@ -1,6 +1,6 @@
 import pytest
 from Telemetry.telemetry.events import TelemetryEvent
-from Telemetry.funnel import stage_funnel
+from Telemetry.telemetry.funnel import stage_funnel
 from .seed_data import seed_win_session, seed_fail_session
 
 def test_win_sessions_funnel():
