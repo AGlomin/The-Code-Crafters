@@ -60,3 +60,17 @@ def compute_funnel(events):
 
     if starts > 0:
         funnel["Completion Rate %"] = round(100 * completes / starts, 1)
+    else:
+        funnel["Completion Rate %"] = 0
+
+    return dict(funnel)
+        
+def stage_failures(events):
+    failures = defaultdict(int)
+
+    for e in events:
+        if e.get("event_type") == "stage_fail":
+            stage = e.get("stage_id")
+            failures[stage] += 1
+
+    return dict(failures)
