@@ -3,6 +3,10 @@ EVENT_TYPES = {
     "session_start",
     "session_end",
 
+    #level lifecycle
+    "level_start",
+    "level_complete",
+
     #stage lifecycle
     "stage_start",
     "stage_complete",

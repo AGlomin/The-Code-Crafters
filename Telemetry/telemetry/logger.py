@@ -21,11 +21,12 @@ except:
         from Telemetry.telemetry.storage import write_event
 
 
-def log_event(event_type, stage_id, session_id, user_id, payload):
+def log_event(event_type, level_id, stage_id, session_id, user_id, payload):
 
     try:
         event = TelemetryEvent.create(
             event_type=event_type,
+            level_id=level_id,
             stage_id=stage_id,
             session_id=session_id,
             user_id=user_id,

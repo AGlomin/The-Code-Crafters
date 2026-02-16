@@ -7,6 +7,7 @@ import uuid
 @dataclass
 class TelemetryEvent:
     event_type: str
+    level_id: int
     stage_id: int
     session_id: str
     user_id: str
@@ -19,6 +20,7 @@ class TelemetryEvent:
     @staticmethod
     def create(
         event_type: str,
+        level_id: int,
         stage_id: int,
         session_id: str,
         user_id: str,
@@ -29,6 +31,9 @@ class TelemetryEvent:
 
         if not isinstance(stage_id, int):
             raise TypeError("stage_id must be int")
+        
+        if not isinstance(level_id, int):
+            raise TypeError("level_id must be int")
 
         if not isinstance(session_id, str):
             raise TypeError("session_id must be string")
@@ -41,6 +46,7 @@ class TelemetryEvent:
 
         return TelemetryEvent(
             event_type=event_type,
+            level_id=level_id,
             stage_id=stage_id,
             session_id=session_id,
             user_id=user_id,

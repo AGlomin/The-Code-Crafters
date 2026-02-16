@@ -7,6 +7,7 @@ FILE_PATH = "telemetry/telemetry.csv"
 FIELDS = [
     "timestamp",
     "event_type",
+    "level_id"
     "stage_id",
     "session_id",
     "user_id",
@@ -29,6 +30,7 @@ def write_event(event):
         writer.writerow({
             "timestamp": event.timestamp,
             "event_type": event.event_type,
+            "level_id": event.level_id,
             "stage_id": event.stage_id,
             "session_id": event.session_id,
             "user_id": event.user_id,
@@ -41,7 +43,8 @@ def write_event(event):
 """
 log_event(
     event_type="character_attack",
-    stage_id=1,
+    level_id,
+    stage_id,
     payload={
         "attacker_id": "player_1",
         "target_id": "enemy_2",

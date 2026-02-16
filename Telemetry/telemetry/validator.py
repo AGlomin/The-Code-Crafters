@@ -16,6 +16,9 @@ def validate_event(event):
     if event.event_type not in EVENT_TYPES:
         raise TelemetryValidationError(f"Invalid event_type: {event.event_type}")
 
+    if event.level_id is None or event.level_id < 0:
+        raise TelemetryValidationError("Invalid level_id")
+
     if event.stage_id is None or event.stage_id < 0:
         raise TelemetryValidationError("Invalid stage_id")
 

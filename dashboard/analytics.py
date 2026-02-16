@@ -14,6 +14,7 @@ def load_events():
 
             for row in reader:
                 # normalize types
+                row["level_id"] = int(row["level_id"])
                 row["stage_id"] = int(row["stage_id"])
 
                 # decode json fields (if using fixed storage)
@@ -54,12 +55,19 @@ def compute_funnel(events):
         elif etype == "session_end":
             funnel["Sessions Ended"] += 1
 
-    # derived metric
-    starts = funnel["Stage Starts"]
-    completes = funnel["Stage Completes"]
+     # levels
+        elif etype == "level_start":
+            funnel["Level Starts"] += 1
 
-    if starts > 0:
-        funnel["Completion Rate %"] = round(100 * completes / starts, 1)
+        elif etype == "level_complete":
+            funnel["Level Completes"] += 1
+
+    # derived metric
+    stage_starts = funnel["Stage Starts"]
+    stage_completes = funnel["Stage Completes"]
+
+    if stage_starts > 0:
+        funnel["Completion Rate %"] = round(100 * stage_completes / stage_starts, 1)
     else:
         funnel["Completion Rate %"] = 0
 

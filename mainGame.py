@@ -128,6 +128,7 @@ total_damage_taken = 0
 log_event(
     "session_start",
     level_id,
+    stage_id,
     session_id,
     user_id,
     {   "session_id":session_id,
@@ -139,6 +140,7 @@ log_event(
 log_event(
     "stage_start",
     level_id,
+    stage_id,
     session_id,
     user_id,
     {   "session_id":session_id,
@@ -150,6 +152,7 @@ log_event(
 log_event(
     "turn_start",
     level_id,
+    stage_id,
     session_id,
     user_id,
     {   "session_id":session_id,
@@ -200,6 +203,7 @@ def player_attack():
     log_event(
         "character_attack",
         level_id,
+        stage_id,
         {
             "attacker_id": getattr(attacker, "name", "player_0"),
             "target_id": getattr(target, "name", "enemy_0"),
@@ -218,6 +222,7 @@ def logAttack(agent, isPlayer, targets):
                 log_event(
                     "character_heal",
                     level_id,
+                    stage_id,
                     session_id,
                     user_id,
                     {
@@ -231,6 +236,7 @@ def logAttack(agent, isPlayer, targets):
                 log_event(
                     "character_attack",
                     level_id,
+                    stage_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id,
@@ -244,6 +250,7 @@ def logAttack(agent, isPlayer, targets):
             log_event(
                 "enemy_attack",
                 level_id,
+                stage_id,
                 session_id,
                 user_id,
                 {   "session_id":session_id,
@@ -266,6 +273,7 @@ def enemy_attack():
     log_event(
         "enemy_attack",
         level_id,
+        stage_id,
         {   "session_id":session_id,
             "enemy_id": getattr(enemy, "name", "enemy_0"),
             "target_id": getattr(target, "name", "player_0"),
@@ -302,6 +310,7 @@ while running:
                 log_event(
                     "quit",
                     level_id,
+                    stage_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id,
@@ -311,6 +320,7 @@ while running:
                 log_event(
                     "stage_fail",
                     level_id,
+                    stage_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id,
@@ -321,6 +331,7 @@ while running:
                 log_event(
                     "session_end",
                     level_id,
+                    stage_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id,
@@ -363,6 +374,7 @@ while running:
                 if moveSuccessful:
                     log_event("character_move",
                              level_id,
+                             stage_id,
                              {"session_id":session_id,
                              "character_id": players[activePlayer].getLabel(),
                              "to_row": clickedRow,
@@ -407,17 +419,19 @@ while running:
                         """
                 log_event(
                     "turn_end", 
-                    stage_id{
-                    
-                    "session_id":session_id,
-                    "turn_number":turn_number,
-                    "active_side": active_side
+                    level_id,
+                    stage_id,
+                    {
+                        "session_id":session_id,
+                        "turn_number":turn_number,
+                        "active_side": active_side
                     }
                 )
                 advance_turn()
                 log_event(
                     "turn_start",
                     level_id,
+                    stage_id,
                     {   "session_id":session_id,
                         "turn_number": turn_number,
                         "active_side": active_side
@@ -430,6 +444,7 @@ while running:
                 log_event(
                     "quit",
                     level_id,
+                    stage_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id,
@@ -439,6 +454,7 @@ while running:
                 log_event(
                     "stage_fail",
                     level_id,
+                    stage_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id,
@@ -449,6 +465,7 @@ while running:
                 log_event(
                     "session_end",
                     level_id,
+                    stage_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id,
@@ -507,6 +524,7 @@ while running:
                     log_event(
                             "turn_end", 
                             level_id,
+                            stage_id,
                             session_id,
                             user_id,
                             {
@@ -519,6 +537,7 @@ while running:
                     log_event(
                         "turn_start",
                         level_id,
+                        stage_id,
                         session_id,
                         user_id,
                         {   "session_id":session_id,
@@ -557,6 +576,7 @@ while running:
             log_event(
                 "stage_complete",
                 level_id,
+                stage_id,
                 session_id,
                 user_id,
                 {   "session_id":session_id,
@@ -567,6 +587,20 @@ while running:
             )
             stage_id+=1
             if stage_id == 3:
+
+                log_event( # you might want to change payload - level stuff added by James, didnt do rest of telemetry
+                    "level_complete",
+                    level_id,
+                    stage_id,
+                    session_id,
+                    user_id,
+                    {   "session_id":session_id,
+                        # dont think this can be done again here, as its for stages - "turns_taken": turn_number,
+                        "characters_alive": sum(p.findAlive() for p in players),
+                        # dont think this can be done again here, as its for stages - "total_damage_taken": total_damage_taken
+                    }
+                )
+
                 # try to load next level, game ends if file doesnt exist
                 try :
                     levelNumber+=1
@@ -577,6 +611,7 @@ while running:
                     log_event(
                         "session_end",
                         level_id,
+                        stage_id,
                         session_id,
                         user_id,
                         {   "session_id":session_id,
@@ -609,9 +644,22 @@ while running:
 
                 loadStage(stage_id, stages, enemyInfo)
 
+                log_event( # you might want to change payload - level stuff added by James, didnt do rest of telemetry
+                    "level_start",
+                    level_id,
+                    stage_id,
+                    session_id,
+                    user_id,
+                    {   "session_id":session_id, 
+                        #dont think this can be done again here, as its for stages - "enemy_count": len(enemies),
+                        "grid_size": f"{rows}x{cols}"
+                    }
+                )
+
                 log_event(
                     "stage_start",
                     level_id,
+                    stage_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id, 
@@ -626,6 +674,7 @@ while running:
                 log_event(
                     "stage_start",
                     level_id,
+                    stage_id,
                     session_id,
                     user_id,
                     {   "session_id":session_id, 
@@ -640,6 +689,7 @@ while running:
             log_event(
                 "stage_fail",
                 level_id,
+                stage_id,
                 session_id,
                 user_id,
                 {   "session_id":session_id,
@@ -650,6 +700,7 @@ while running:
             log_event(
                 "session_end",
                 level_id,
+                stage_id,
                 session_id,
                 user_id,
                 {   "session_id":session_id,
