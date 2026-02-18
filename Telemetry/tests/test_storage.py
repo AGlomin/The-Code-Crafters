@@ -7,6 +7,8 @@ def test_write_event_creates_and_writes_csv(tmp_path, monkeypatch):
     #using monkeypatch to avoid writing to the real csv
     #temporary csv path
     test_file = tmp_path/"telemetry.csv"
+    
+    test_file.touch() #create temp file
 
     # temporarily changing file path
     monkeypatch.setattr(storage, "FILE_PATH", str(test_file))
@@ -44,4 +46,5 @@ def test_write_event_creates_and_writes_csv(tmp_path, monkeypatch):
     assert row["stage_id"] == "1"  
     assert row["user_id"] == "anon_user"
     assert row["session_id"] == "session1"
+
 
