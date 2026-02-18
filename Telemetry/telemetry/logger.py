@@ -24,6 +24,7 @@ except:
 def log_event(event_type, level_id, stage_id, session_id, user_id, payload):
 
     try:
+        #create structured TelemetryEvent object
         event = TelemetryEvent.create(
             event_type=event_type,
             level_id=level_id,
@@ -32,13 +33,16 @@ def log_event(event_type, level_id, stage_id, session_id, user_id, payload):
             user_id=user_id,
             payload=payload,
         )
-
+        #validate event schema and required fields
         validate_event(event)
+        #anomaly detection
         event = detect_anomalies(event)
+        #add event to telemetry storage (CSV file)
         write_event(event)
-
+    #handle domain-specific validation errors separately
     except TelemetryValidationError as e:
         print(f"[Telemetry Validation Error] {e}")
-
+    #catch any unexpected system errors
     except Exception as e:
         print(f"[Telemetry Error] {e}")
+
