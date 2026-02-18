@@ -20,6 +20,8 @@ Pygame
 
 Pandas
 
+Pytest
+
 Tkinter 	
 
 math
