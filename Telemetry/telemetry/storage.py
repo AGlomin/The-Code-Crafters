@@ -17,17 +17,23 @@ FIELDS = [
 
 
 def write_event(event):
-
+    #ensure telemetry directory exists
     os.makedirs(os.path.dirname(FILE_PATH) or ".", exist_ok=True)
+    #check whether file already exists
     file_exists = os.path.isfile(FILE_PATH)
+    #check if file exists but empty
     file_empty = os.path.getsize(FILE_PATH) == 0
 
+    #open file in append mode to preserve previous telemetry
     with open(FILE_PATH, "a", newline="", encoding="utf-8") as f:
+        #create DictWriter with schema
         writer = csv.DictWriter(f, fieldnames=FIELDS)
-
+        #if file is new or empty, write header row first
         if (not file_exists) or file_empty:
             writer.writeheader()
-
+            
+        #write event data to CSV
+        #complex fields (payload and data_quality_flags) are JSON-encoded
         writer.writerow({
             "timestamp": event.timestamp,
             "event_type": event.event_type,
