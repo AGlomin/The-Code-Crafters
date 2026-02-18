@@ -28,4 +28,7 @@ EVENT_TYPES = {
 
     #configuration
     "settings_change",
+
+    #player closes game to quit
+    "quit"
 }

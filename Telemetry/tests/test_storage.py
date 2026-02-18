@@ -13,6 +13,7 @@ def test_write_event_creates_and_writes_csv(tmp_path, monkeypatch):
 
     event = TelemetryEvent.create(
         event_type="character_attack",
+        level_id=0,
         stage_id=1,
         session_id="session1",
         user_id="anon_user",
@@ -33,11 +34,13 @@ def test_write_event_creates_and_writes_csv(tmp_path, monkeypatch):
     assert len(rows) == 1
     row = rows[0]
     assert "event_type" in row
+    assert "level_id" in row
     assert "stage_id" in row
     assert "session_id" in row
     assert "user_id" in row
     
     assert row["event_type"] == "character_attack"
+    assert row["level_id"] == "0"
     assert row["stage_id"] == "1"  
     assert row["user_id"] == "anon_user"
     assert row["session_id"] == "session1"

@@ -7,6 +7,7 @@ user_id = "anon_user"
 log_event(
     "session_start",
     0,
+    0,
     session_id,
     user_id,
     {"config_id": "balanced", "difficulty_label": "balanced"},
@@ -14,6 +15,7 @@ log_event(
 
 log_event(
     "stage_start",
+    0,
     1,
     session_id,
     user_id,
@@ -22,6 +24,7 @@ log_event(
 
 log_event(
     "character_attack",
+    0,
     1,
     session_id,
     user_id,
@@ -35,6 +38,7 @@ log_event(
 
 log_event(
     "stage_complete",
+    0,
     1,
     session_id,
     user_id,
@@ -43,6 +47,7 @@ log_event(
 
 log_event(
     "turn_start",
+    0,
     1,
     session_id,
     user_id,
@@ -51,6 +56,7 @@ log_event(
 
 log_event(
     "turn_end",
+    0,
     1,
     session_id,
     user_id,
@@ -59,6 +65,7 @@ log_event(
 
 log_event(
     "character_move",
+    0,
     1,
     session_id,
     user_id,
@@ -72,6 +79,7 @@ log_event(
 
 log_event(
     "session_end",
+    0,
     0,
     session_id,
     user_id,

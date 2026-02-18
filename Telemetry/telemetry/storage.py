@@ -7,7 +7,7 @@ FILE_PATH = "telemetry/telemetry.csv"
 FIELDS = [
     "timestamp",
     "event_type",
-    "level_id"
+    "level_id",
     "stage_id",
     "session_id",
     "user_id",
@@ -20,11 +20,12 @@ def write_event(event):
 
     os.makedirs(os.path.dirname(FILE_PATH) or ".", exist_ok=True)
     file_exists = os.path.isfile(FILE_PATH)
+    file_empty = os.path.getsize(FILE_PATH) == 0
 
     with open(FILE_PATH, "a", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=FIELDS)
 
-        if not file_exists:
+        if (not file_exists) or file_empty:
             writer.writeheader()
 
         writer.writerow({

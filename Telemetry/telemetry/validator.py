@@ -55,9 +55,10 @@ def detect_anomalies(event):
     if event.event_type == "stage_retry":
         if event.payload.get("retry_count", 0) > 10:
             event.data_quality_flags.append("excessive_retries")
-
+    
+    ''' This is not invalid, the first stage of each level is 0 -James
     if event.event_type == "stage_complete" and event.stage_id == 0:
         event.data_quality_flags.append("invalid_stage_complete")
-
+    '''
     return event
 

@@ -138,6 +138,17 @@ log_event(
 )
 
 log_event(
+    "level_start",
+    level_id,
+    stage_id,
+    session_id, 
+    user_id,
+    {   "session_id":session_id,
+        "grid_size": f"{rows}x{cols}"
+    }
+)
+
+log_event(
     "stage_start",
     level_id,
     stage_id,

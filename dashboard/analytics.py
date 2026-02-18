@@ -78,7 +78,8 @@ def stage_failures(events):
 
     for e in events:
         if e.get("event_type") == "stage_fail":
+            level = e.get("level_id")
             stage = e.get("stage_id")
-            failures[stage] += 1
+            failures[level, stage] += 1
 
     return dict(failures)
