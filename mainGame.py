@@ -61,6 +61,13 @@ def loadEnemies(enemyInfo, stageEnemies, stageWidth, stageHeight, players):
                 enemies.append(e)
                 break
     return enemies
+# Get active player from those still alive, defaulting to the last selected, and working through list (closest for list of length 3)
+def getActiveFromAlive(players, currActive):
+    for i in range(len(players)):
+        if players[currActive].findAlive() == 1:
+            return currActive
+        currActive = (currActive + 1) % len(players)
+    return currActive
 # Get monitor size
 monitorInfo = pygame.display.Info()
 monitorWidth, monitorHeight = monitorInfo.current_w, monitorInfo.current_h
@@ -566,6 +573,7 @@ while running:
                         for player in players:
                             player.endTurn()
                     else:
+                        activePlayer = getActiveFromAlive(players, activePlayer)
                         for player in players:
                             player.startTurn(cols, rows, obstacles, players, enemies)
             else:
@@ -693,6 +701,11 @@ while running:
                         "grid_size": f"{rows}x{cols}"
                     }
                 )
+                active_side = "player"
+                turn_number = 1 # reset may not be needed?
+                animating = False
+                animatingMove = False
+
             # running = False
     
         elif stage_lost(players):
