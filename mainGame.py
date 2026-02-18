@@ -703,8 +703,12 @@ while running:
                 )
                 active_side = "player"
                 turn_number = 1 # reset may not be needed?
+                activePlayer = getActiveFromAlive(players, activePlayer)
+                for player in players:
+                    player.startTurn(cols, rows, obstacles, players, enemies)
                 animating = False
                 animatingMove = False
+
 
             # running = False
     
