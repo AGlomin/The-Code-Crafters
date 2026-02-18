@@ -85,6 +85,7 @@ Scrum Board- https://docs.google.com/spreadsheets/d/1BoWglaC-3-RQQE-Y0ZF6Q08MyAX
 ├── agent_information.csv
 ├── classes.py
 ├── LevelHandler.py
+├── LICENSE
 ├── logintest.py
 ├── mainGame.py
 ├── README.md
