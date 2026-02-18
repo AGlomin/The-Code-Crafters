@@ -43,3 +43,50 @@ Malika - Documentation and Comms Lead
 
 ## Project Documentation
 Scrum Board- https://docs.google.com/spreadsheets/d/1BoWglaC-3-RQQE-Y0ZF6Q08MyAXAGwlc6wPbj1PWNmk/edit?usp=sharing 
+
+## File Structure
+├── _pycache_/
+│   ├── classes.cpython-312.pyc
+│   └── LevelHandler.cpython-312.pyc
+├── .venv/
+├── assets/
+├── dashboard/
+│   └── test/
+│   │   ├── _init_.py
+│   │   ├── test_analytics.py
+│   ├── _init_.py
+│   ├── analytics.py
+│   ├── cat
+│   └── dashboard.py
+└── levels/
+│   ├── level0.txt
+│   └── level1.txt
+└── telemetry/
+│   ├── _init_.py
+│   └── telemetry.csv
+└── Telemetry/
+│   └── telemetry/
+│   │   ├── _init_.py
+│   │   ├── event_types.py
+│   │   ├── events.py
+│   │   ├── logger.py
+│   │   ├── storage.py
+│   │   └── validation.py
+│   └── tests/
+│   │   ├── _init_.py
+│   │   ├── seed_data.py
+│   │   ├── test_events.py
+│   │   ├── test_funnel.py
+│   │   ├── test_storage.py
+│   │   └── test_validation.py
+│   └── funnel.py
+│   ├── mini_test.py
+│   └── telemetry_scheme
+├── agent_information.csv
+├── classes.py
+├── LevelHandler.py
+├── logintest.py
+├── mainGame.py
+├── README.md
+├── report.txt
+└── UI.py
