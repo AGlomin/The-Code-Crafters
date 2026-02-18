@@ -91,18 +91,18 @@ Scrum Board- https://docs.google.com/spreadsheets/d/1BoWglaC-3-RQQE-Y0ZF6Q08MyAX
 ├── report.txt
 └── UI.py
 
-## Deployment Guide
+# Deployment Guide
 This guide explains how to set up the environment, run tests, generate telemetry, and launch the dashboard from a fresh clone.
 
-# System Requirements
+## System Requirements
 - Python 3.12
 - Conda (recommended)
 
-# Clone the Repository
+## Clone the Repository
 git clone: https://github.com/AGlomin/The-Code-Crafters.git
 cd: The-Code-Crafters
 
-# Environment Setup
+## Environment Setup
 Create and activate the environment:
 conda create -n codecrafters python=3.12 -y
 conda activate codecrafters
@@ -113,7 +113,7 @@ python -m pip install --upgrade pip
 Install dependencies:
 python -m pip install pytest pygame pandas
 
-# How to Run Tests
+## How to Run Tests
 Run all tests:
 pytest
 
@@ -123,7 +123,7 @@ pytest -q
 
 (All 24 tests should pass. No failures should appear)
 
-# Run the Game (Generate Telemetry)
+## Run the Game (Generate Telemetry)
 Start the game:
 python mainGame.py
 
@@ -134,13 +134,13 @@ tail -n 5 telemetry/telemetry.csv
 
 (You should see recent event entries (e.g. stage_start, stage_complete, session_end))
 
-# Run the Analytics Dashboard
+## Run the Analytics Dashboard
 Launch the dashboard:
 python dashboard/dashboard.py
 
 Click “Refresh Dashboard” to display progression funnel metrics and stage failure counts based on the telemetry file.
 
-# Full Demo Workflow
+## Full Demo Workflow
 Activate environment
 conda activate codecrafters
 
@@ -158,7 +158,7 @@ python dashboard/dashboard.py
 
 Click “Refresh Dashboard”
 
-# Common Issues
+## Common Issues
 If a module is missing:
 python -m pip install pytest pygame pandas
 
