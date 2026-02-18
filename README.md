@@ -122,7 +122,7 @@ Or in quiet mode:
 
 pytest -q
 
-(All 24 tests should pass. No failures should appear)
+(All 25 tests should pass. No failures should appear)
 
 ## Run the Game (Generate Telemetry)
 Start the game:
