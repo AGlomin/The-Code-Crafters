@@ -6,15 +6,23 @@ import uuid
 
 @dataclass
 class TelemetryEvent:
+    #event classification and context identifiers
     event_type: str
     level_id: int
     stage_id: int
     session_id: str
     user_id: str
 
+    #automatically generates a unique event identifier
     event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    
+    #timestamp automatically set at event creation
     timestamp: float = field(default_factory=time.time)
+    
+    #additional structured event-specific data
     payload: Dict[str, Any] = field(default_factory=dict)
+
+    #flags used for data validation
     data_quality_flags: List[str] = field(default_factory=list)
 
     @staticmethod
@@ -26,6 +34,7 @@ class TelemetryEvent:
         user_id: str,
         payload: Dict[str, Any],
     ):
+        #type validation to ensure telemetry integrity
         if not isinstance(event_type, str):
             raise TypeError("event_type must be string")
 
@@ -44,6 +53,7 @@ class TelemetryEvent:
         if not isinstance(payload, dict):
             raise TypeError("payload must be dict")
 
+        #return validated TelemetryEvent instances
         return TelemetryEvent(
             event_type=event_type,
             level_id=level_id,
@@ -52,5 +62,4 @@ class TelemetryEvent:
             user_id=user_id,
             payload=payload,
         )
-
-#commit 
+ 
