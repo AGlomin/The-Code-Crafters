@@ -29,13 +29,13 @@ math
 time
 
 ## Team Members
-Aislin - Project Lead
+Aislin - Project Lead/Scrum Master
 
-Ciara - Technical Lead
+Ciara - Requirements and UX Lead
 
-Faatimah - Data or ML Lead
+Faatimah - Technical Lead
 
-James - Requirements and UX Lead
+James - Data and ML Lead
 
 Nur - QA and Testing Lead
 
