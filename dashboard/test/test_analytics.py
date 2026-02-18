@@ -40,16 +40,18 @@ def test_compute_no_start():
 #--------------------------------------------
 ##Stage failures tests
 def test_stage_failures_mult_stages():
-    events=[
-        {"event_type":"stage_fail","stage_id":1},
-        {"event_type":"stage_fail","stage_id":1},
-        {"event_type":"stage_fail","stage_id":2},
-        {"event_type":"stage_start","stage_id":2},
-        {"event_type":"stage_complete","stage_id":2}]
-    failures=stage_failures(events)
-    assert failures[1]==2
-    assert failures[2]==1
-    assert len(failures)==2
+    events = [
+        {"event_type":"stage_fail","level_id":0,"stage_id":1},
+        {"event_type":"stage_fail","level_id":0,"stage_id":1},
+        {"event_type":"stage_fail","level_id":0,"stage_id":2},
+        {"event_type":"stage_start","level_id":0,"stage_id":2},
+        {"event_type":"stage_complete","level_id":0,"stage_id":2}
+    ]
+
+    failures = stage_failures(events)
+    assert failures[(0, 1)] == 2
+    assert failures[(0, 2)] == 1
+    
 def test_stage_no_failures():
     events=[
         {"event_type":"stage_start","stage_id":1},
