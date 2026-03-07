@@ -12,6 +12,7 @@ class TelemetryEvent:
     stage_id: int
     session_id: str
     user_id: str
+    config_id: str #NEWLY ADDED
 
     #automatically generates a unique event identifier
     event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
@@ -32,6 +33,7 @@ class TelemetryEvent:
         stage_id: int,
         session_id: str,
         user_id: str,
+        config_id: str, #NEWLY ADDED
         payload: Dict[str, Any],
     ):
         #type validation to ensure telemetry integrity
@@ -50,6 +52,9 @@ class TelemetryEvent:
         if not isinstance(user_id, str):
             raise TypeError("user_id must be string")
 
+        if not isinstance(config_id, str): #NEWLY ADDED
+            raise TypeError("config_id must be string")
+
         if not isinstance(payload, dict):
             raise TypeError("payload must be dict")
 
@@ -60,6 +65,7 @@ class TelemetryEvent:
             stage_id=stage_id,
             session_id=session_id,
             user_id=user_id,
+            config_id=config_id,   # NEWLY ADDED
             payload=payload,
         )
  
