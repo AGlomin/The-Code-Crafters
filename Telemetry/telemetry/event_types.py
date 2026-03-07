@@ -21,10 +21,13 @@ EVENT_TYPES = {
     "character_move",
     "character_attack",
     "character_heal",
+    "payer_damage", #added during second sprint, track damage recieved
+    "player_death", #added during second sprint, track player death
 
     #enemy actions
     "enemy_move",
     "enemy_attack",
+    "enemy_damage", #added during second sprint, track damage dealth to enemies
 
     #configuration
     "settings_change",
