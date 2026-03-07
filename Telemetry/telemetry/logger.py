@@ -5,6 +5,7 @@ except:
         from telemetry.events import TelemetryEvent
     except:
         from Telemetry.telemetry.events import TelemetryEvent
+
 try:
     from validator import validate_event, detect_anomalies, TelemetryValidationError
 except:
@@ -12,6 +13,7 @@ except:
         from telemetry.validator import validate_event, detect_anomalies, TelemetryValidationError
     except:
         from Telemetry.telemetry.validator import validate_event, detect_anomalies, TelemetryValidationError
+
 try:
     from storage import write_event
 except:
@@ -21,28 +23,53 @@ except:
         from Telemetry.telemetry.storage import write_event
 
 
-def log_event(event_type, level_id, stage_id, session_id, user_id, payload):
+def log_event(
+    event_type,
+    level_id,
+    stage_id,
+    session_id,
+    user_id,
+    payload,
+    config_id="baseline"  # NEW: balancing configuration
+):
 
     try:
-        #create structured TelemetryEvent object
+        # create structured TelemetryEvent object
         event = TelemetryEvent.create(
             event_type=event_type,
             level_id=level_id,
             stage_id=stage_id,
             session_id=session_id,
             user_id=user_id,
+            config_id=config_id,   # NEW
             payload=payload,
         )
-        #validate event schema and required fields
+
+        # validate event schema and required fields
         validate_event(event)
-        #anomaly detection
+
+        # anomaly detection
         event = detect_anomalies(event)
-        #add event to telemetry storage (CSV file)
+
+        # add event to telemetry storage (CSV file)
         write_event(event)
-    #handle domain-specific validation errors separately
+
+    # handle domain-specific validation errors separately
     except TelemetryValidationError as e:
         print(f"[Telemetry Validation Error] {e}")
-    #catch any unexpected system errors
+
+    # catch any unexpected system errors
     except Exception as e:
         print(f"[Telemetry Error] {e}")
 
+"""eg use:
+log_event(
+    event_type="player_damage",
+    level_id=current_level,
+    stage_id=current_stage,
+    session_id=session_id,
+    user_id="player_1",
+    config_id="enemy_damage_v2",
+    payload={"damage": 3}
+)
+"""
