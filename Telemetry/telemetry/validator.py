@@ -27,6 +27,12 @@ def validate_event(event):
 
     if not event.user_id:
         raise TelemetryValidationError("Missing user_id")
+    
+    if not event.config_id: #NEWLY ADDED
+        raise TelemetryValidationError("Missing config_id")
+
+    if not isinstance(event.config_id, str): #NEWLY ADDED
+        raise TelemetryValidationError("config_id must be string")
 
     if not isinstance(event.payload, dict):
         raise TelemetryValidationError("Payload must be dict")
