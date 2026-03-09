@@ -10,4 +10,6 @@ It includes:
 
 3. Simulation mode
 
-4. Decison Log tied to evidence.
+4. Decison Log tied to evidence
+
+5. Gameplay data
