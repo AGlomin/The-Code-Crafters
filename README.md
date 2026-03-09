@@ -101,6 +101,7 @@ This guide explains how to set up the environment, run tests, generate telemetry
 
 ## Clone the Repository
 git clone: https://github.com/AGlomin/The-Code-Crafters.git
+
 cd: The-Code-Crafters
 
 ## Environment Setup
