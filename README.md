@@ -106,7 +106,9 @@ cd: The-Code-Crafters
 
 ## Environment Setup
 Create and activate the environment:
+
 conda create -n codecrafters python=3.12 -y
+
 conda activate codecrafters
 
 Upgrade pip:
