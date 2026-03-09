@@ -100,16 +100,16 @@ This guide explains how to set up the environment, run tests, generate telemetry
 - Conda (recommended)
 
 ## Clone the Repository
-git clone: https://github.com/AGlomin/The-Code-Crafters.git
+1. git clone https://github.com/AGlomin/The-Code-Crafters.git
 
-cd: The-Code-Crafters
+2. cd The-Code-Crafters
 
 ## Environment Setup
 Create and activate the environment:
 
-conda create -n codecrafters python=3.12 -y
+1. conda create -n codecrafters python=3.12 -y
 
-conda activate codecrafters
+2. conda activate codecrafters
 
 Upgrade pip:
 python -m pip install --upgrade pip
