@@ -1,37 +1,47 @@
 EVENT_TYPES = {
-    #session lifecycle
+    # session lifecycle
     "session_start",
     "session_end",
 
-    #level lifecycle
+    # level lifecycle
     "level_start",
     "level_complete",
 
-    #stage lifecycle
+    # stage lifecycle
     "stage_start",
     "stage_complete",
     "stage_fail",
     "stage_retry",
 
-    #turn lifecycle
+    # turn lifecycle
     "turn_start",
     "turn_end",
 
-    #player actions
+    # player actions
     "character_move",
     "character_attack",
     "character_heal",
-    "payer_damage", #added during second sprint, track damage recieved
-    "player_death", #added during second sprint, track player death
+    "player_damage",
+    "player_death",
 
-    #enemy actions
+    # enemy actions
     "enemy_move",
     "enemy_attack",
-    "enemy_damage", #added during second sprint, track damage dealth to enemies
+    "enemy_damage",
 
-    #configuration
+    # economy / progression
+    "resource_gain",
+    "resource_spend",
+    "item_pickup",
+
+    # boss mechanics
+    "boss_start",
+    "boss_fail",
+    "boss_win",
+
+    # configuration
     "settings_change",
 
-    #player closes game to quit
+    # player quits game
     "quit"
 }
