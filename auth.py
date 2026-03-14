@@ -1,15 +1,15 @@
 import csv
 import os
 
-# get the absolute path of this file's directory
+# get the directory where this file is located
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# build path to users.csv so it works regardless of working directory
+# build full path to users.csv
 USER_FILE = os.path.join(BASE_DIR, "users.csv")
 
 
 def load_users():
-    """Load users from CSV and convert permission fields to booleans."""
+    """Load user records from the CSV file."""
 
     users = []
 
@@ -17,14 +17,29 @@ def load_users():
         reader = csv.DictReader(file)
 
         for row in reader:
+            if not row:
+                continue
 
-            # remove leading/trailing whitespace from CSV values
-            cleaned_row = {k.strip(): v.strip() for k, v in row.items()}
+            cleaned_row = {}
 
-            # convert string permission flags to booleans
-            cleaned_row["can_play"] = cleaned_row["can_play"].lower() == "true"
-            cleaned_row["can_dashboard"] = cleaned_row["can_dashboard"].lower() == "true"
-            cleaned_row["can_balance"] = cleaned_row["can_balance"].lower() == "true"
+            for k, v in row.items():
+                # skip invalid keys
+                if k is None:
+                    continue
+
+                key = k.strip()
+                value = v.strip() if isinstance(v, str) else ""
+
+                cleaned_row[key] = value
+
+            # skip blank rows
+            if not cleaned_row.get("username"):
+                continue
+
+            # convert permission strings into boolean values
+            cleaned_row["can_play"] = cleaned_row.get("can_play", "").lower() == "true"
+            cleaned_row["can_dashboard"] = cleaned_row.get("can_dashboard", "").lower() == "true"
+            cleaned_row["can_balance"] = cleaned_row.get("can_balance", "").lower() == "true"
 
             users.append(cleaned_row)
 
@@ -32,7 +47,7 @@ def load_users():
 
 
 def check_login(username, password):
-    """Return user dict if credentials match, otherwise None."""
+    """Return the matching user if credentials are correct."""
 
     users = load_users()
 
@@ -44,7 +59,7 @@ def check_login(username, password):
 
 
 def get_permissions(user):
-    """Return permission dictionary for a logged-in user."""
+    """Return a dictionary of permissions for the user."""
 
     return {
         "play": user["can_play"],
