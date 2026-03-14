@@ -1,44 +1,134 @@
 import tkinter as tk
 from tkinter import messagebox
+from auth import check_login, get_permissions
+import subprocess
+import sys
+import os
+
+# store currently logged-in user
+current_user = None
+
+# get project directory path
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-# hard coded username and password
+def open_game():
+    """Launch main game script."""
+    game_path = os.path.join(BASE_DIR, "mainGame.py")
+    root.destroy()
+    subprocess.Popen([sys.executable, game_path])
 
-USERNAME="Malika"
-PASSWORD="MALIKA COOL"
 
-#login function
-def login(): #function running when user clicks login button
-    user=entry_username.get() # retrieves user entry
-    pwd=entry_password.get() #retrieves user entry for password
+def open_dashboard():
+    """Launch dashboard script."""
+    dashboard_path = os.path.join(BASE_DIR, "dashboard", "dashboard.py")
+    subprocess.Popen([sys.executable, dashboard_path])
 
-    if user==USERNAME and pwd==PASSWORD: #checks if the hardcoded is the same
-        messagebox.showinfo("Successful Login!") #pop up message
+
+def open_balancer():
+    """Placeholder for balancing toolkit."""
+    messagebox.showinfo("Balancer", "Balancer screen not connected yet")
+
+
+def show_role_menu(user):
+    """Display menu options based on user permissions."""
+
+    global current_user
+    current_user = user
+
+    # clear current UI widgets
+    for widget in root.winfo_children():
+        widget.destroy()
+
+    permissions = get_permissions(user)
+
+    # welcome text
+    tk.Label(
+        root,
+        text=f"Welcome, {user['username']}",
+        font=("Arial", 16, "bold")
+    ).pack(pady=10)
+
+    tk.Label(
+        root,
+        text=f"Role: {user['role'].title()} | Difficulty: {user['difficulty'].title()}",
+        font=("Arial", 11)
+    ).pack(pady=5)
+
+    tk.Label(
+        root,
+        text="Select an option:",
+        font=("Arial", 12)
+    ).pack(pady=10)
+
+    # show buttons depending on permissions
+    if permissions["play"]:
+        tk.Button(root, text="Open Game", width=20, command=open_game).pack(pady=5)
+
+    if permissions["dashboard"]:
+        tk.Button(root, text="Open Dashboard", width=20, command=open_dashboard).pack(pady=5)
+
+    if permissions["balance"]:
+        tk.Button(root, text="Open Balancer", width=20, command=open_balancer).pack(pady=5)
+
+    # logout button returns to login screen
+    tk.Button(root, text="Logout", width=20, command=show_login_page).pack(pady=15)
+
+
+def login():
+    """Validate login credentials."""
+
+    username = entry_username.get().strip()
+    password = entry_password.get().strip()
+
+    # prevent empty login attempts
+    if not username or not password:
+        messagebox.showerror("Login Failed", "Please enter username and password")
+        return
+
+    user = check_login(username, password)
+
+    if user:
+        messagebox.showinfo("Login", "Login successful")
+        show_role_menu(user)
     else:
-        messagebox.showerror("Incorrect username or password") #pop up message
+        messagebox.showerror("Login Failed", "Incorrect username or password")
 
 
-root=tk.Tk() #main app window
-root.title("Login")# login title
-root.geometry("300x200")
+def show_login_page():
+    """Create login screen."""
+
+    # clear current widgets
+    for widget in root.winfo_children():
+        widget.destroy()
+
+    tk.Label(root, text="Indie Game Telemetry Login", font=("Arial", 16, "bold")).pack(pady=15)
+
+    tk.Label(root, text="Username").pack(pady=5)
+    global entry_username
+    entry_username = tk.Entry(root, width=25)
+    entry_username.pack(pady=5)
+
+    tk.Label(root, text="Password").pack(pady=5)
+    global entry_password
+    entry_password = tk.Entry(root, width=25, show="*")
+    entry_password.pack(pady=5)
+
+    tk.Button(root, text="Login", width=20, command=login).pack(pady=15)
 
 
-tk.Label(root, text="Username").pack(pady=15)
-entry_username=tk.Entry(root)
-entry_username.pack()
+# create main Tkinter window
+root = tk.Tk()
+root.title("Login")
+root.geometry("400x350")
 
-tk.Label(root, text="Password").pack(pady=15)
-entry_password=tk.Entry(root, show="*")
-entry_password.pack()
+# bring window to front on launch
+root.lift()
+root.attributes("-topmost", True)
+root.after(200, lambda: root.attributes("-topmost", False))
 
-tk.Button(root, text="Login", command=login).pack(pady=15)
+# load login interface
+show_login_page()
 
+# start UI event loop
 root.mainloop()
-
-# --- main.py ---
-USERNAME = "Malika"
-PASSWORD = "MALIKA COOL"
-
-def check_login(user, pwd):
-    """Return True if username and password match."""
-    return user == USERNAME and pwd == PASSWORD

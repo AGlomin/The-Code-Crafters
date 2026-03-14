@@ -1,0 +1,17 @@
+user_id,username,password,role,difficulty,can_play,can_dashboard,can_balance
+U001,player1,pass123,player,easy,True,False,False
+U002,player2,pass234,player,balanced,True,False,False
+U003,designer1,design123,designer,balanced,True,True,True
+U004,maintainer1,maintain123,maintainer,hard,True,True,True
+
+##player
+# username: player1
+# password: pass123
+
+##designer
+# username: designer1
+# password: design123
+
+##maintainer
+# username: maintainer1
+# password: maintain123
