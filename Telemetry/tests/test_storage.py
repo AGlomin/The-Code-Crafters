@@ -47,4 +47,6 @@ def test_write_event_creates_and_writes_csv(tmp_path, monkeypatch):
     assert row["user_id"] == "anon_user"
     assert row["session_id"] == "session1"
 
-
+    import json
+    assert json.loads(row["payload"].replace("'", '"')) == event.payload
+    assert json.loads(row["data_quality_flags"].replace("'", '"')) == event.data_quality_flags

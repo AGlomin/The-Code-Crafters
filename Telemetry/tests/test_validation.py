@@ -1,7 +1,10 @@
 import pytest
 from Telemetry.telemetry.events import TelemetryEvent
 from Telemetry.telemetry.validator import validate_event, TelemetryValidationError,detect_anomalies
+from Telemetry.telemetry.validator import SESSION_STATE
 
+def setup_function():
+    SESSION_STATE.clear()
 def test_valid_event():   
     event = TelemetryEvent.create(
         event_type="character_attack",
@@ -102,4 +105,15 @@ def test_no_anomalies():
     result= detect_anomalies(event)
     assert result.data_quality_flags == []
 
+def test_stage_complete_without_start_flag():
+    event = TelemetryEvent.create(
+        event_type="stage_complete",
+        level_id=0,
+        stage_id=1,
+        session_id="session_new",
+        user_id="user1",
+        payload={"turns_taken": 5}
+    )
+    result=detect_anomalies(event)
+    assert "stage_complete_without_start" in result.data_quality_flags
     

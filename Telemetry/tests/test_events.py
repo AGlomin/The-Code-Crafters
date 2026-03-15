@@ -55,4 +55,8 @@ def test_stage_id_wrong_type():
 
 def test_payload_wrong_type():
     with pytest.raises(TypeError):
-        TelemetryEvent.create("event", 1,"s1","u1","not_a_dict")
+        TelemetryEvent.create("event", 1, 1,"s1","u1","not_a_dict")
+
+def test_default_config_id():
+    event = TelemetryEvent.create("event",0,1,"s1","u1",{})
+    assert event.config_id=="baseline"
