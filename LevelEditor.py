@@ -1,3 +1,5 @@
+from tkinter import filedialog
+
 import pygame
 import LevelHandler
 # trying to understand my code here is like trying to decipher ancient heiroglyphics so I will need to add comments once this is more functional
@@ -299,7 +301,17 @@ class Button:
         return rect.collidepoint(mx, my)
 
 pygame.init()
-
+# File explorer, for saving/loading (getting file name)
+filename = filedialog.asksaveasfilename(initialdir = "/",
+                                            title = "Select a File to edit (or create a new one)",
+                                            filetypes = (("Text files",
+                                                            "*.txt*"),
+                                                        ("all files",
+                                                            "*.*")))
+if filename == '': # To prevent empty files being loaded
+    pygame.quit()
+    exit
+print(filename)
 myScreen = Screen(750,500,'black', 100)
 buttons = [Button(myScreen, 90, '#00D900', '#002600',100,150 - 100 * i, text = str(i)) for i in range(4)] 
 addMode = False
@@ -353,9 +365,8 @@ def saveStages(allLevels, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow
         file.write('\n'.join(lines))
 # Render the player characters
 def renderPlayers(myScreen, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol):
-    
     return
-filename = 'test.txt'
+
 levels, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol = load_level_from_file(filename)
 myLevel, stageNum = load_stage(1, levels)
 running = True
