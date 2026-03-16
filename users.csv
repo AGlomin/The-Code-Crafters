@@ -1,6 +1,7 @@
-user_id,username,password,role,difficulty,can_play,can_dashboard,can_balance
-U001,player1,pass123,player,easy,True,False,False
-U002,player2,pass234,player,balanced,True,False,False
-U003,designer1,design123,designer,balanced,True,True,True
-U004,maintainer1,maintain123,maintainer,hard,True,True,True
+user_id,username,password,role,can_play,can_dashboard,can_balance
+U001,player1,pass123,player,True,False,False
+U002,player2,pass234,player,True,False,False
+U003,designer1,design123,designer,True,True,True
+U004,maintainer1,maintain123,maintainer,True,True,True
+
 
