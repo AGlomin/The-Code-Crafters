@@ -3,13 +3,14 @@ from tkinter import filedialog
 import pygame
 import LevelHandler
 # trying to understand my code here is like trying to decipher ancient heiroglyphics so I will need to add comments once this is more functional
-# screen class
+# screen class. was originally the whole screen, changed it to work as a surface
 class Screen:
-    def __init__ (self, width, height, bg_colour, side_size = 0):
+    def __init__ (self, width, height, bg_colour, side_size = 0, top = 0, left = 0):
         self.width = width
         self.height = height
         self.side_size = side_size
-        self.surface = pygame.display.set_mode((width, height))
+        self.surface = pygame.Surface((width, height))
+        self.pos = (left, top)
         self.bg_colour = bg_colour
     def blit(self, surface, position):
         self.surface.blit(surface, position)
@@ -23,7 +24,8 @@ class Screen:
         return self.surface
     def render_background(self):
         self.surface.fill(self.bg_colour)
-    def show_screen(self):
+    def show_screen(self, screen):
+        screen.blit(self.surface, self.pos)
         pygame.display.flip()
 # single tile in Level
 class GridSquare:
@@ -39,6 +41,8 @@ class GridSquare:
         cx, cy = screen.get_center()
         self.x = round(cx + (self.size * (col + 1 - ((cols + 1)/2))))
         self.y = round(cy - (self.size * (((rows + 1)/2) - row - 1)))
+    def getPosAndSize(self):
+        return self.x - self.size // 2, self.y - self.size // 2, self.size
     def get_x(self):
         return self.x
     def get_y(self):
@@ -148,15 +152,18 @@ class Level:
                 break
         return False, row_differ, col_differ
     # over-complicated code just for editing the Level (changing state, or adding/removing rows/columns, depending on the mode and where clicked)
-    def Level_click(self, mx, my, screen, addMode):
+    def Level_click(self, mx, my, screen, addMode, levels):
         square, row, col = self.find_collision(mx, my)
         # square clicked
         if square:
-            # temp, make enemy 1
-            if self.Level_squares[row][col].get_state() == '0':
-                self.setEnemy('en1', row, col)
-            else:
-                self.removeEnemy(row, col)
+            if addMode == 3:
+                if self.Level_squares[row][col].get_state() == '0':
+                    self.setEnemy('en1', row, col)
+                else:
+                    self.removeEnemy(row, col)
+            elif addMode == 4:
+                for level in levels:
+                    level.setObstacle(row, col)
         else:
             size = self.Level_squares[0][0].get_size()
             screen_width, screen_height = screen.get_width(), screen.get_height()
@@ -179,31 +186,28 @@ class Level:
                 square_row +=1
             if col == self.Level_cols:
                 square_col +=1
-            if addMode:
-                if abs(mx-screen_width//2)>self.Level_squares[-1][-1].get_x()-screen_width//2+size//2:
-                    self.insert_col(square_col, screen)
-                elif abs(my-screen_height//2)>self.Level_squares[-1][-1].get_y()-screen_height//2+size//2:
-                    self.insert_row(square_row, screen)
-                elif abs(cx-mx)<abs(cy-my):
-                    self.insert_row(square_row, screen)
-                else:
-                    self.insert_col(square_col, screen)
+            if addMode == 0:
+                for level in levels:
+                    if abs(mx-screen_width//2)>self.Level_squares[-1][-1].get_x()-screen_width//2+size//2:
+                        level.insert_col(square_col, screen)
+                    elif abs(my-screen_height//2)>self.Level_squares[-1][-1].get_y()-screen_height//2+size//2:
+                        level.insert_row(square_row, screen)
+                    elif abs(cx-mx)<abs(cy-my):
+                        level.insert_row(square_row, screen)
+                    else:
+                        level.insert_col(square_col, screen)
             else:
-                if abs(mx-screen_width//2)>self.Level_squares[-1][-1].get_x()-screen_width//2+size//2:
-                    self.delete_row(square_row, screen)
-                elif abs(my-screen_height//2)>self.Level_squares[-1][-1].get_y()-screen_height//2+size//2:
-                    self.delete_col(square_col, screen)
-                elif abs(cx-mx)<abs(cy-my):
-                    self.delete_col(square_col, screen)
-                else:
-                    self.delete_row(square_row, screen)
-        try:
-            if self.Level_squares[self.start_row][self.start_col].get_state()!='2':
-                self.start_row = -1
-                self.start_col = -1
-        except:
-            self.start_row = -1
-            self.start_col = -1
+                for level in levels:
+                    if abs(mx-screen_width//2)>self.Level_squares[-1][-1].get_x()-screen_width//2+size//2:
+                        level.delete_row(square_row, screen)
+                    elif abs(my-screen_height//2)>self.Level_squares[-1][-1].get_y()-screen_height//2+size//2:
+                        level.delete_col(square_col, screen)
+                    elif abs(cx-mx)<abs(cy-my):
+                        level.delete_col(square_col, screen)
+                    else:
+                        level.delete_row(square_row, screen)
+    def getSquareSizeAndPos(self, row, col):
+        return self.Level_squares[row][col].getPosAndSize()
     # drawing the editor. Highlights square, row or column that is being hovered over
     def draw_editor(self, mx, my, screen, addMode):
         square, row, col = self.find_collision(mx, my)
@@ -234,7 +238,7 @@ class Level:
                 square_row +=1
             if col == self.Level_cols:
                 square_col +=1
-            if addMode:
+            if addMode == 0:
                 if abs(mx-screen_width//2)>self.Level_squares[-1][-1].get_x()-screen_width//2+size//2:
                     pygame.draw.line(screen.get_surface(), 'green', (draw_col, 0), (draw_col, screen_height), width = 2)
                 elif abs(my-screen_height//2)>self.Level_squares[-1][-1].get_y()-screen_height//2+size//2:
@@ -243,7 +247,7 @@ class Level:
                     pygame.draw.line(screen.get_surface(), 'green', (0, draw_row), (screen_width, draw_row), width = 2)
                 else:
                     pygame.draw.line(screen.get_surface(), 'green', (draw_col, 0), (draw_col, screen_height), width = 2)
-            else:
+            elif addMode == 1:
                 if abs(mx-screen_width//2)>self.Level_squares[-1][-1].get_x()-screen_width//2+size//2:
                     pygame.draw.rect(screen.get_surface(), 'red', ((0, draw_row), (screen_width, size)), width = 2)
                 elif abs(my-screen_height//2)>self.Level_squares[-1][-1].get_y()-screen_height//2+size//2:
@@ -273,6 +277,8 @@ class Level:
         self.Level_squares[row][column].set_state('0', None)
     def getRowsAndColumns(self):
         return self.Level_rows, self.Level_cols
+    def setObstacle(self, row, column):
+        self.Level_squares[row][column].set_state('0' if self.Level_squares[row][column].get_state() == '1' else '1', None)
 # button class
 class Button:
     def __init__(self, screen, size, colour, text_colour, side_size, y, font = None, fontsize = 32, text = ""):
@@ -310,19 +316,26 @@ filename = filedialog.asksaveasfilename(initialdir = "/",
                                                             "*.*")))
 if filename == '': # To prevent empty files being loaded
     pygame.quit()
-    exit
+    exit()
 print(filename)
+mainScreen = pygame.display.set_mode((750, 500))
 myScreen = Screen(750,500,'black', 100)
 buttons = [Button(myScreen, 90, '#00D900', '#002600',100,150 - 100 * i, text = str(i)) for i in range(4)] 
-addMode = False
+mode = 4
 # change mode depending on what mode currently on
 def update_add():
-    global addMode
-    addMode = not(addMode)
-    if addMode:
+    global mode
+    mode = (mode + 1) % 5
+    if mode == 0:
         buttons[0].set_text("Add")
-    else:
+    elif mode == 1:
         buttons[0].set_text("Del")
+    elif mode == 2:
+        buttons[0].set_text("Player")
+    elif mode == 3:
+        buttons[0].set_text("Enemy")
+    else:
+        buttons[0].set_text("Obstacle")
 update_add()
 # Add obstacles to level base. Enemies added afterwards
 def generateStageWithObstacles(rows, cols, obstaclePlaces):
@@ -364,8 +377,34 @@ def saveStages(allLevels, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow
     with open(filename, 'w') as file:
         file.write('\n'.join(lines))
 # Render the player characters
-def renderPlayers(myScreen, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol):
-    return
+def renderPlayers(myScreen, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol, stageNum, levelGuide):
+    brawlerPic = pygame.image.load('assets/brawlerProto.png')
+    bomberPic = pygame.image.load('assets/bomberProto.png')
+    medicPic = pygame.image.load('assets/medicProto.png')
+    # Shows semi-transparent when not on the first stage
+    if stageNum != 1:
+        alpha = 192
+        brawlerPic.fill((255,255,255,alpha), None, pygame.BLEND_RGBA_MULT)
+        bomberPic.fill((255,255,255,alpha), None, pygame.BLEND_RGBA_MULT)
+        medicPic.fill((255,255,255,alpha), None, pygame.BLEND_RGBA_MULT)
+    try:
+        x, y, size = levelGuide.getSquareSizeAndPos(brawlerRow, brawlerCol)
+        brawlerPic = pygame.transform.scale(brawlerPic, (size, size))
+        myScreen.blit(brawlerPic, (x, y))
+    except:
+        pass
+    try:
+        x, y, size = levelGuide.getSquareSizeAndPos(bomberRow, bomberCol)
+        bomberPic = pygame.transform.scale(bomberPic, (size, size))
+        myScreen.blit(bomberPic, (x, y))
+    except:
+        pass
+    try:
+        x, y, size = levelGuide.getSquareSizeAndPos(medicRow, medicCol)
+        medicPic = pygame.transform.scale(medicPic, (size, size))
+        myScreen.blit(medicPic, (x, y))
+    except:
+        pass
 
 levels, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol = load_level_from_file(filename)
 myLevel, stageNum = load_stage(1, levels)
@@ -385,14 +424,14 @@ while running:
             elif buttons[3].check_click(mx, my):
                 myLevel, stageNum = load_stage(3, levels)
             else:
-                myLevel.Level_click(mx, my, myScreen, addMode)
+                myLevel.Level_click(mx, my, myScreen, mode, levels)
                 # save_Level(myLevel, LevelIndex) <- only to run upon close now
     myScreen.render_background()
-    myLevel.render(myScreen, mx, my, addMode)
-    renderPlayers(myScreen, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol)
+    myLevel.render(myScreen, mx, my, mode)
+    renderPlayers(myScreen, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol, stageNum, levels[0])
     for button in buttons:
         button.render(myScreen)
-    myScreen.show_screen()
+    myScreen.show_screen(mainScreen)
 # Save stages
 saveStages(levels, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol, filename)
 pygame.quit()
