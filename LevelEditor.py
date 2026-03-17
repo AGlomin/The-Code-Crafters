@@ -18,6 +18,8 @@ class Screen:
         return self.width - self.side_size
     def get_height(self):
         return self.height
+    def updateHeight(self, height):
+        self.height = height
     def get_center(self):
         return ((self.width-self.side_size)//2,self.height//2)
     def get_surface(self):
@@ -27,6 +29,8 @@ class Screen:
     def show_screen(self, screen):
         screen.blit(self.surface, self.pos)
         pygame.display.flip()
+    def mouse_in_range(self, mx, my):
+        return self.surface.get_rect().collidepoint((mx, my))
 # single tile in Level
 class GridSquare:
     def __init__(self, pos, gridSize, state, imageBase, imageObstacle, imageEnemy, screen, min_cushion_size=1.5, start = False):
@@ -152,18 +156,22 @@ class Level:
                 break
         return False, row_differ, col_differ
     # over-complicated code just for editing the Level (changing state, or adding/removing rows/columns, depending on the mode and where clicked)
-    def Level_click(self, mx, my, screen, addMode, levels):
+    def Level_click(self, mx, my, screen, addMode, levels, adding):
         square, row, col = self.find_collision(mx, my)
         # square clicked
         if square:
             if addMode == 3:
-                if self.Level_squares[row][col].get_state() == '0':
-                    self.setEnemy('en1', row, col)
+                levelState = self.Level_squares[row][col].get_state()
+                if levelState == '0' or (levelState[:-1] == 'en' and not(levelState == f"en{adding}")):
+                    self.setEnemy(f'en{adding}', row, col)
                 else:
                     self.removeEnemy(row, col)
             elif addMode == 4:
                 for level in levels:
                     level.setObstacle(row, col)
+            partAdded = -1
+            rowAdded = False
+            delete = False
         else:
             size = self.Level_squares[0][0].get_size()
             screen_width, screen_height = screen.get_width(), screen.get_height()
@@ -190,22 +198,48 @@ class Level:
                 for level in levels:
                     if abs(mx-screen_width//2)>self.Level_squares[-1][-1].get_x()-screen_width//2+size//2:
                         level.insert_col(square_col, screen)
+                        partAdded = square_col
+                        rowAdded = False
+                        delete = False
                     elif abs(my-screen_height//2)>self.Level_squares[-1][-1].get_y()-screen_height//2+size//2:
                         level.insert_row(square_row, screen)
+                        partAdded = square_row
+                        rowAdded = True
+                        delete = False
                     elif abs(cx-mx)<abs(cy-my):
                         level.insert_row(square_row, screen)
+                        partAdded = square_row
+                        rowAdded = True
+                        delete = False
                     else:
                         level.insert_col(square_col, screen)
+                        partAdded = square_col
+                        rowAdded = False
+                        delete = False
             else:
                 for level in levels:
                     if abs(mx-screen_width//2)>self.Level_squares[-1][-1].get_x()-screen_width//2+size//2:
                         level.delete_row(square_row, screen)
+                        partAdded = square_row
+                        rowAdded = True
+                        delete = True
                     elif abs(my-screen_height//2)>self.Level_squares[-1][-1].get_y()-screen_height//2+size//2:
                         level.delete_col(square_col, screen)
+                        partAdded = square_col
+                        rowAdded = False
+                        delete = True
                     elif abs(cx-mx)<abs(cy-my):
                         level.delete_col(square_col, screen)
+                        partAdded = square_col
+                        rowAdded = False
+                        delete = True
                     else:
                         level.delete_row(square_row, screen)
+                        partAdded = square_row
+                        rowAdded = True
+                        delete = True
+        return partAdded, rowAdded, delete
+        
     def getSquareSizeAndPos(self, row, col):
         return self.Level_squares[row][col].getPosAndSize()
     # drawing the editor. Highlights square, row or column that is being hovered over
@@ -305,7 +339,26 @@ class Button:
         rect = pygame.Rect(0, 0, self.size, self.size)
         rect.center = (self.x, self.y)
         return rect.collidepoint(mx, my)
-
+class ImageButton:
+    def __init__(self, size, colour, image, x, y):
+        self.size = size
+        self.colour = pygame.Color(colour)
+        self.x = x
+        self.y = y
+        self.image = image
+    def set_image(self, image):
+        self.image = image
+    def render(self, screen):
+        rect = pygame.Rect(0, 0, self.size, self.size)
+        rect.x, rect.y = self.x, self.y
+        pygame.draw.rect(screen.get_surface(), self.colour, rect)
+        rescaledImage = pygame.transform.scale(self.image, (self.size, self.size))
+        rect = rescaledImage.get_rect()
+        rect.x, rect.y = self.x, self.y
+        screen.surface.blit(rescaledImage, rect)
+    def check_click(self, mx, my):
+        rect = pygame.Rect(self.x, self.y, self.size, self.size)
+        return rect.collidepoint(mx, my)
 pygame.init()
 # File explorer, for saving/loading (getting file name)
 filename = filedialog.asksaveasfilename(initialdir = "/",
@@ -318,7 +371,8 @@ if filename == '': # To prevent empty files being loaded
     pygame.quit()
     exit()
 print(filename)
-mainScreen = pygame.display.set_mode((750, 500))
+screenWidth, screenHeight = 750, 500
+mainScreen = pygame.display.set_mode((screenWidth, screenHeight))
 myScreen = Screen(750,500,'black', 100)
 buttons = [Button(myScreen, 90, '#00D900', '#002600',100,150 - 100 * i, text = str(i)) for i in range(4)] 
 mode = 4
@@ -405,10 +459,31 @@ def renderPlayers(myScreen, brawlerRow, brawlerCol, bomberRow, bomberCol, medicR
         myScreen.blit(medicPic, (x, y))
     except:
         pass
+def addPlayerAtMouse(player, level, mx, my):
+    global brawlerRow
+    global brawlerCol
+    global bomberRow
+    global bomberCol
+    global medicRow
+    global medicCol
+    _, row, col = level.find_collision(mx, my)
+    if player == 0:
+        brawlerRow = row
+        brawlerCol = col
+    elif player == 1:
+        bomberRow = row
+        bomberCol = col
+    else:
+        medicRow = row
+        medicCol = col
 
 levels, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol = load_level_from_file(filename)
 myLevel, stageNum = load_stage(1, levels)
 running = True
+showBottomBar = False
+bottomBarSize = screenHeight // 4
+adding = 0
+bottomBarButtons = [ImageButton(bottomBarSize, '#002600', None, i * bottomBarSize, screenHeight - bottomBarSize) for i in range(3)]
 while running:
     mx, my = pygame.mouse.get_pos()
     for event in pygame.event.get():
@@ -417,21 +492,79 @@ while running:
         if event.type == pygame.MOUSEBUTTONUP:
             if buttons[0].check_click(mx, my):
                 update_add()
+                showBottomBar = mode == 2 or mode == 3 # only shown for adding players and enemies
+                # resize level and screen
+                if showBottomBar:
+                    myScreen.updateHeight(screenHeight - bottomBarSize)
+                    if mode == 2:
+                        bottomBarButtons[0].set_image(pygame.image.load('assets/brawlerProto.png'))
+                        bottomBarButtons[1].set_image(pygame.image.load('assets/bomberProto.png'))
+                        bottomBarButtons[2].set_image(pygame.image.load('assets/medicProto.png'))
+                    else:
+                        for i in range(3):
+                            bottomBarButtons[i].set_image(pygame.image.load(f"assets/en{i}Proto.png"))
+                else:
+                    myScreen.updateHeight(screenHeight)
+                for level in levels:
+                    level.update_sizes(myScreen)
             elif buttons[1].check_click(mx, my):
                 myLevel, stageNum = load_stage(1, levels)
             elif buttons[2].check_click(mx, my):
                 myLevel, stageNum = load_stage(2, levels)
             elif buttons[3].check_click(mx, my):
                 myLevel, stageNum = load_stage(3, levels)
-            else:
-                myLevel.Level_click(mx, my, myScreen, mode, levels)
-                # save_Level(myLevel, LevelIndex) <- only to run upon close now
+            elif showBottomBar and any([bottomBarButtons[i].check_click(mx, my) for i in range(3)]):
+                for i in range(3):
+                    if bottomBarButtons[i].check_click(mx, my):
+                        adding = i
+            elif showBottomBar and my < screenHeight - bottomBarSize or not(showBottomBar):
+                if mode == 2:
+                    if stageNum == 1:
+                        addPlayerAtMouse(adding, level, mx, my)
+                else:
+                    partAdded, rowAdded, delete = myLevel.Level_click(mx, my, myScreen, mode, levels, adding)
+                    if partAdded != -1:
+                        if delete:
+                            if rowAdded:
+                                if partAdded < brawlerRow:
+                                    brawlerRow -= 1
+                                if partAdded < bomberRow:
+                                    bomberRow -= 1
+                                if partAdded < medicRow:
+                                    medicRow -= 1
+                            else:
+                                if partAdded < brawlerCol:
+                                    brawlerCol -= 1
+                                if partAdded < bomberRow:
+                                    bomberCol -= 1
+                                if partAdded < medicRow:
+                                    medicCol -= 1
+                            # TODO: fix overlaps, revert changes if error
+                        else:
+                            if rowAdded:
+                                if partAdded < brawlerRow:
+                                    brawlerRow += 1
+                                if partAdded < bomberRow:
+                                    bomberRow += 1
+                                if partAdded < medicRow:
+                                    medicRow += 1
+                            else:
+                                if partAdded < brawlerCol:
+                                    brawlerCol += 1
+                                if partAdded < bomberRow:
+                                    bomberCol += 1
+                                if partAdded < medicRow:
+                                    medicCol += 1
     myScreen.render_background()
     myLevel.render(myScreen, mx, my, mode)
     renderPlayers(myScreen, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol, stageNum, levels[0])
     for button in buttons:
         button.render(myScreen)
+    if showBottomBar:
+        for button in bottomBarButtons:
+            button.render(myScreen)
     myScreen.show_screen(mainScreen)
 # Save stages
 saveStages(levels, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol, filename)
+print(adding)
 pygame.quit()
