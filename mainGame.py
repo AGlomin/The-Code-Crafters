@@ -19,6 +19,7 @@ def createScreen(width, height, fullscreen = False):
     return screen
 # Difficulty Modifier. 0 = easy, 1 = normal, 2 = hard
 def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, monitorWidth, monitorHeight):
+    doHide = True # for testing, can turn this off for showing death animation
     levelCompleted = False
     difficultyAtkChange = 0.25
     difficultyModifier = 1 + (difficultyAtkChange * (difficulty - 1))
@@ -34,7 +35,7 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
         df = pd.read_csv("agent_information.csv")
         for row in df.itertuples():
             if row.char_label == 'medic':
-                playerInformation.append(c.MEDIC(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label))
+                playerInformation.append(c.MEDIC(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}", row.char_label))
             elif row.player_agent:
                 playerInformation.append(c.PLAYER(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label))
             else:
@@ -293,10 +294,10 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
     clock = pygame.time.Clock()
     dt = 0
     frame = 0
+    frameModifier = 0.125
+    actualFrame = 0
     moveFrame = 0
     damageFrame = 0
-    #Frames per cycle: number of frames per animation cycle
-    framesPerCycle = 8
     framesPerDamage = 16
     animating = False
     animatingMove = False
@@ -733,26 +734,28 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
                     col.updateSizeAndPos(size, screenWidth, screenHeight, rows, cols)
                 col.render(screen)
         # Render player agents
-        for playerI in range(len(players)):
-            player = players[playerI]
-            player.render(screen, tiles, frame, moveFrame, active_side == "player" and not(animating) and player.findAlive() == 1, True, activePlayer == playerI)
+        for playerI, player in enumerate(players):
+            showRender = player.findAlive() == 1 or not(doHide)
+            player.render(screen, tiles, actualFrame, moveFrame, showRender, active_side == "player" and not(animating) and player.findAlive() == 1, True, activePlayer == playerI)
         # Render enemy agents
         for enemy in enemies:
-            enemy.render(screen, tiles, frame, moveFrame)
+            enemy.render(screen, tiles, actualFrame, moveFrame, True)
         # Render obstacles
         for obstacle in obstacles:
             obstacle.render(screen, tiles)
         # HP Rendered after everything else rendered, to allow it to be shown on top of everything else
         # Render HP of all player agents
         for player in players:
-            player.renderHP(screen, tiles, moveFrame, damageFrame)
+            showRender = player.findAlive() == 1 or not(doHide)
+            player.renderHP(screen, tiles, moveFrame, damageFrame, showRender)
         # Render HP of all enemy agents
         for enemy in enemies:
-            enemy.renderHP(screen, tiles, moveFrame, damageFrame)
+            enemy.renderHP(screen, tiles, moveFrame, damageFrame, True)
         pygame.display.flip()
         # Update time and frame
         dt = clock.tick(30)
-        frame = (frame + 1) % framesPerCycle
+        frame = frame + frameModifier
+        actualFrame = m.floor(frame)
         moveFrame += 1
     return levelCompleted
 # pygame.quit()

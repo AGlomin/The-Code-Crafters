@@ -134,7 +134,7 @@ class AGENT:
                 # Going down
                 yDir = 1
             # faceRight: Stored, used for full rendering (character faces last direction they moved)
-            self.faceRight = newTileX > prevTileX
+            self.faceRight = newTileX >= prevTileX
             # xRender, yRender = tile.getPosition()
         sizeRender = tile.getSize()
         return xRender, yRender, sizeRender, yDir
@@ -184,26 +184,53 @@ class AGENT:
     def getMovesLeft(self):
         return len(self.movementPath)
     # Render the agent
-    def render(self, screen, tiles, frame, moveFrame, selectingPosition = False, player = False, activePlayer = False):
+    def render(self, screen, tiles, frame, moveFrame, show, selectingPosition = False, player = False, activePlayer = False):
         xRender, yRender, sizeRender, yDir = self.getRenderPosAndSize(tiles, moveFrame, True)
-        # For now, use a single sprite (found at row 0, column 0 in sprite sheet)
-        spritesheetRow = 0
-        spritesheetCol = 0
+        animFrame = frame % 4
+        # Medic has animation (supports any with name eventually)
+        if self.spritesheetName in ["medic"]:
+            spritesheetCol = animFrame
+            """
+            ROWS:
+            0: idle forwards, not used in game
+            1: idle side, used for everything except walking
+            2: walk side
+            3: walk forwards
+            4: walk backwards
+            5: Defeated
+            """
+            # If ydir is not 0, then moving up or down
+            if self.HP == 0 and self.HP == self.prevHP and player:
+                spritesheetRow = 5
+            elif yDir == -1:
+                spritesheetRow = 4
+            elif yDir == 1:
+                spritesheetRow = 3
+            elif len(self.movementPath) != 0:
+                spritesheetRow = 2
+            else:
+                spritesheetRow = 1
+        # Others do not, so use a single sprite (found at row 0, column 0 in sprite sheet)
+        else:
+            spritesheetRow = 0
+            spritesheetCol = 0
         # Only get the current sprite. SRCALPHA flag ensures a transparent background
-        sprite = pygame.Surface((32, 32), flags = pygame.SRCALPHA)
-        sprite.blit(self.spritesheet, (0, 0), (spritesheetCol * 32, spritesheetRow * 32, 32, 32))
-        # Scale, flip (if necessary) and render the sprite
-        spriteScaled = pygame.transform.flip(pygame.transform.scale(sprite, (sizeRender, sizeRender)), self.faceRight, False)
-        screen.blit(spriteScaled, (xRender, yRender))
+        if show:
+            sprite = pygame.Surface((32, 32), flags = pygame.SRCALPHA)
+            sprite.blit(self.spritesheet, (0, 0), (spritesheetCol * 32, spritesheetRow * 32, 32, 32))
+            # Scale, flip (if necessary) and render the sprite
+            spriteScaled = pygame.transform.flip(pygame.transform.scale(sprite, (sizeRender, sizeRender)), self.faceRight, False)
+            screen.blit(spriteScaled, (xRender, yRender))
         if player and selectingPosition:
             # Render position being moved to, if this is different to the current position
             if not(self.moveTo.distance_to(self.pos) == 0):
                 moveToX, moveToY = self.getMoveToRenderPos(tiles)
-                spriteAlpha = spriteScaled.copy()
-                spriteAlpha.set_alpha(128)
-                screen.blit(spriteAlpha, (moveToX, moveToY))
+                if show:
+                    spriteAlpha = spriteScaled.copy()
+                    spriteAlpha.set_alpha(128)
+                    screen.blit(spriteAlpha, (moveToX, moveToY))
             # Render if the tile is active and the active outline was successfully loaded
-            if self.activeBox != None:
+            if self.activeBox != None and show:
                 if activePlayer:
                     # Draw a 5x5 rectangle, 1 pixel away from top of sprite
                     activeX, activeY = xRender + sizeRender // 32, yRender + sizeRender // 32
@@ -213,9 +240,9 @@ class AGENT:
                 screen.blit(activeScaled, (xRender, yRender))
 
     # Render the HP bar of the agent
-    def renderHP(self, screen, tiles, moveFrame, damageFrame):
-        # Only run if the HP bar was successfully loaded
-        if self.hpBar == None:
+    def renderHP(self, screen, tiles, moveFrame, damageFrame, show):
+        # Only run if the HP bar was successfully loaded and the sprite is being shown
+        if self.hpBar == None or not(show):
             return
         xRender, yRender, sizeRender, _ = self.getRenderPosAndSize(tiles, moveFrame)
         if self.HP == self.prevHP:
