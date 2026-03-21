@@ -188,7 +188,7 @@ class AGENT:
         xRender, yRender, sizeRender, yDir = self.getRenderPosAndSize(tiles, moveFrame, True)
         animFrame = frame % 4
         # Medic has animation (supports any with name eventually)
-        if self.spritesheetName in ["medic"]:
+        if self.spritesheetName in ["medic", "brawler"]:
             spritesheetCol = animFrame
             """
             ROWS:

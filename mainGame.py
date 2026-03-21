@@ -19,7 +19,7 @@ def createScreen(width, height, fullscreen = False):
     return screen
 # Difficulty Modifier. 0 = easy, 1 = normal, 2 = hard
 def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, monitorWidth, monitorHeight):
-    doHide = True # for testing, can turn this off for showing death animation
+    doHide = False # for testing, can turn this off for showing death animation
     levelCompleted = False
     difficultyAtkChange = 0.25
     difficultyModifier = 1 + (difficultyAtkChange * (difficulty - 1))
@@ -37,7 +37,7 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
             if row.char_label == 'medic':
                 playerInformation.append(c.MEDIC(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}", row.char_label))
             elif row.player_agent:
-                playerInformation.append(c.PLAYER(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label))
+                playerInformation.append(c.PLAYER(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}" if row.char_label == "brawler" else f"{row.char_label}Proto", row.char_label))
             else:
                 enemyInformation.append(c.ENEMY(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label, difficultyMod))
         return playerInformation, enemyInformation
@@ -746,7 +746,7 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
         # HP Rendered after everything else rendered, to allow it to be shown on top of everything else
         # Render HP of all player agents
         for player in players:
-            showRender = player.findAlive() == 1 or not(doHide)
+            showRender = player.findAlive() == 1
             player.renderHP(screen, tiles, moveFrame, damageFrame, showRender)
         # Render HP of all enemy agents
         for enemy in enemies:
