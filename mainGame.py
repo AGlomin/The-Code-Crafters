@@ -9,7 +9,8 @@ from Telemetry.telemetry.logger import log_event
 import json #for parameters
 
 #To load parameters on to main game.
-with open("parameter.json", "r") as f:
+
+with open("balancing_toolkit\\parameters.json", "r") as f:
     params=json.load(f)
 pygame.init()
 # FOR TESTING
@@ -40,7 +41,7 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
         enemyInformation = []
         df = pd.read_csv("agent_information.csv")
         for row in df.itertuples():
-
+            """
             #load stats from parameters
             player_health=params["player"]["health"]
             player_attack=params["player"]["attack"]
@@ -52,12 +53,15 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
             enemy_range=params["enemy"]["attack_range"]
             enemy_speed=params["enemy"]["speed"]
 
+            what did I say about touching my code. this is not right, these are stored in the agent_information
+            """
+
             if row.char_label == 'medic':
-                playerInformation.append(c.MEDIC(player_health, player_attack, player_range, player_speed, pygame.math.Vector2(0, 0), f"{row.char_label}", row.char_label))
+                playerInformation.append(c.MEDIC(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}", row.char_label))
             elif row.player_agent:
                 playerInformation.append(c.PLAYER(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}" if row.char_label == "brawler" else f"{row.char_label}Proto", row.char_label))
             else:
-                enemyInformation.append(c.ENEMY(enemy_health, enemy_attack, enemy_range, enemy_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label, difficultyMod))
+                enemyInformation.append(c.ENEMY(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label, difficultyMod))
         return playerInformation, enemyInformation
         
   #discarded code, greyed out incase new code is wrong.      
