@@ -6,6 +6,11 @@ import LevelHandler
 import time
 import uuid
 from Telemetry.telemetry.logger import log_event
+import json #for parameters
+
+#To load parameters on to main game.
+with open("parameter.json", "r") as f:
+    params=json.load(f)
 pygame.init()
 # FOR TESTING
 session_id = "0 but a string"
@@ -21,7 +26,8 @@ def createScreen(width, height, fullscreen = False):
 def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, monitorWidth, monitorHeight):
     doHide = True # for testing, can turn this off for showing death animation
     levelCompleted = False
-    difficultyAtkChange = 0.25
+    difficultyAtkChange=params["difficulty"]["attack_scaling"]
+    #difficultyAtkChange = 0.25
     difficultyModifier = 1 + (difficultyAtkChange * (difficulty - 1))
     # function to find the size of a tile, given the number of rows, columns, and size of the screen
     def findSize(screen, rows, cols):
@@ -34,13 +40,35 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
         enemyInformation = []
         df = pd.read_csv("agent_information.csv")
         for row in df.itertuples():
+
+            #load stats from parameters
+            player_health=params["player"]["health"]
+            player_attack=params["player"]["attack"]
+            player_range=params["player"]["attack_range"]
+            player_speed=params["player"]["move_speed"]
+
+            enemy_health=params["enemy"]["health"]
+            enemy_attack=params["enemy"]["attack"]
+            enemy_range=params["enemy"]["attack_range"]
+            enemy_speed=params["enemy"]["speed"]
+
             if row.char_label == 'medic':
-                playerInformation.append(c.MEDIC(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}", row.char_label))
+                playerInformation.append(c.MEDIC(player_health, player_attack, player_range, player_speed, pygame.math.Vector2(0, 0), f"{row.char_label}", row.char_label))
             elif row.player_agent:
-                playerInformation.append(c.PLAYER(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label))
+                playerInformation.append(c.PLAYER(player_health, player_attack, player_range, player_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label))
             else:
-                enemyInformation.append(c.ENEMY(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label, difficultyMod))
+                enemyInformation.append(c.ENEMY(enemy_health, enemy_attack, enemy_range, enemy_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label, difficultyMod))
         return playerInformation, enemyInformation
+        
+  #discarded code, greyed out incase new code is wrong.      
+            #if row.char_label == 'medic':
+                #playerInformation.append(c.MEDIC(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}", row.char_label))
+            #elif row.player_agent:
+                #playerInformation.append(c.PLAYER(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label))
+            #else:
+                #enemyInformation.append(c.ENEMY(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label, difficultyMod))
+        #return playerInformation, enemyInformation
+    
     def loadEnemies(enemyInfo, stageEnemies, stageWidth, stageHeight, players):
         enemies = []
         enemyLabels = {}
@@ -298,7 +326,8 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
     actualFrame = 0
     moveFrame = 0
     damageFrame = 0
-    framesPerDamage = 16
+    framesPerDamage=params["gameplay"]["frames_per_damage"]
+    #framesPerDamage = 16
     animating = False
     animatingMove = False
     movementDone = False
@@ -753,7 +782,9 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
             enemy.renderHP(screen, tiles, moveFrame, damageFrame, True)
         pygame.display.flip()
         # Update time and frame
-        dt = clock.tick(30)
+        fps=params["gameplay"]["fps"]
+        dt=clock.tick(fps)
+        #dt = clock.tick(30)
         frame = frame + frameModifier
         actualFrame = m.floor(frame)
         moveFrame += 1
