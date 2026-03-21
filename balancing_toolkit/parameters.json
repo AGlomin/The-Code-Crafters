@@ -1,0 +1,22 @@
+{
+  "player":{
+    "health": 100,
+    "attack": 20,
+    "attack_range":3,
+    "move_speed":2 
+  }
+  "enemy": {
+    "health":80,
+    "attack": 15,
+    "attack_range":2,
+    "move_speed":2,
+    "count":3
+  }
+  "difficulty":{
+    "attack_scaling":0.25
+  }
+  "gameplay":{
+    "frames_per_damage":16,
+    "fps":30
+  }
+}
