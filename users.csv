@@ -4,4 +4,18 @@ U002,player2,pass234,player,True,False,False
 U003,designer1,design123,designer,True,True,True
 U004,maintainer1,maintain123,maintainer,True,True,True
 
+### username and passwords
+## player 1
+# username: player1
+# password: pass123
+## player 2
+# username: player2
+# password: pass234
+## designer
+# username: designer1
+# password: design23
+## maintainer
+# username: maintainer1
+# password: maintain123
+
 
