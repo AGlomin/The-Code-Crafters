@@ -12,10 +12,12 @@ import json #for parameters
 
 with open("balancing_toolkit\\parameters.json", "r") as f:
     params=json.load(f)
+
 pygame.init()
 # FOR TESTING
 session_id = "0 but a string"
 user_id = "1 but a string"
+
 # Creates or updates the screen, to allow for fullscreen
 def createScreen(width, height, fullscreen = False):
     if fullscreen:
@@ -23,13 +25,15 @@ def createScreen(width, height, fullscreen = False):
     else:
         screen = pygame.display.set_mode((width, height), flags=pygame.RESIZABLE)
     return screen
+
 # Difficulty Modifier. 0 = easy, 1 = normal, 2 = hard
 def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, monitorWidth, monitorHeight):
     doHide = False # for testing, can turn this off for showing death animation
     levelCompleted = False
-    difficultyAtkChange=params["difficulty"]["attack_scaling"]
+    difficultyAtkChange=params["level" + str(levelNumber)]["difficultyAttackScaling"]
     #difficultyAtkChange = 0.25
     difficultyModifier = 1 + (difficultyAtkChange * (difficulty - 1))
+    
     # function to find the size of a tile, given the number of rows, columns, and size of the screen
     def findSize(screen, rows, cols):
         screenWidth = screen.get_width()
@@ -57,11 +61,11 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
             """
 
             if row.char_label == 'medic':
-                playerInformation.append(c.MEDIC(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}", row.char_label))
+                playerInformation.append(c.MEDIC(row.health_points + params["level" + str(levelNumber)]["medic"]["health"], row.base_attack + params["level" + str(levelNumber)]["medic"]["attack"], row.attack_range + params["level" + str(levelNumber)]["medic"]["attack_range"], row.move_speed + params["level" + str(levelNumber)]["medic"]["move_speed"], pygame.math.Vector2(0, 0), f"{row.char_label}", row.char_label))
             elif row.player_agent:
-                playerInformation.append(c.PLAYER(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}" if row.char_label == "brawler" else f"{row.char_label}Proto", row.char_label))
+                playerInformation.append(c.PLAYER(row.health_points + params["level" + str(levelNumber)][row.char_label]["health"], row.base_attack + params["level" + str(levelNumber)][row.char_label]["attack"], row.attack_range + params["level" + str(levelNumber)][row.char_label]["attack_range"], row.move_speed + params["level" + str(levelNumber)][row.char_label]["move_speed"], pygame.math.Vector2(0, 0), f"{row.char_label}" if row.char_label == "brawler" else f"{row.char_label}Proto", row.char_label))
             else:
-                enemyInformation.append(c.ENEMY(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label, difficultyMod))
+                enemyInformation.append(c.ENEMY(row.health_points + params["level" + str(levelNumber)][row.char_label]["health"], row.base_attack + params["level" + str(levelNumber)][row.char_label]["attack"], row.attack_range + params["level" + str(levelNumber)][row.char_label]["attack_range"], row.move_speed + params["level" + str(levelNumber)][row.char_label]["move_speed"], pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label, difficultyMod))
         return playerInformation, enemyInformation
         
   #discarded code, greyed out incase new code is wrong.      
@@ -269,7 +273,7 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
                         {
                             "healer_id": agentLabel,
                             "target_id": target,
-                            "healed": agentDamage,
+                            "heal_amount": agentDamage,
                             "healing_range": agentRange
                         }
                     )
@@ -330,8 +334,8 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
     actualFrame = 0
     moveFrame = 0
     damageFrame = 0
-    framesPerDamage=params["gameplay"]["frames_per_damage"]
-    #framesPerDamage = 16
+    #framesPerDamage=params["gameplay"]["frames_per_damage"] i dont think this is for balancing, dont think we should be messing with this part haha
+    framesPerDamage = 16
     animating = False
     animatingMove = False
     movementDone = False
@@ -786,9 +790,9 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
             enemy.renderHP(screen, tiles, moveFrame, damageFrame, True)
         pygame.display.flip()
         # Update time and frame
-        fps=params["gameplay"]["fps"]
-        dt=clock.tick(fps)
-        #dt = clock.tick(30)
+              #fps=params["gameplay"]["fps"] again dont think we should be changing fps its not balancing
+              #dt=clock.tick(fps)
+        dt = clock.tick(30)
         frame = frame + frameModifier
         actualFrame = m.floor(frame)
         moveFrame += 1

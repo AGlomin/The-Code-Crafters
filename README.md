@@ -115,7 +115,7 @@ Upgrade pip:
 python -m pip install --upgrade pip
 
 Install dependencies:
-python -m pip install pytest pygame pandas
+python -m pip install pytest pygame pandas matplotlib
 
 ## How to Run Tests
 Run all tests:
@@ -164,6 +164,6 @@ Click “Refresh Dashboard”
 
 ## Common Issues
 If a module is missing:
-python -m pip install pytest pygame pandas
+python -m pip install pytest pygame pandas matplotlib
 
 If tests fail, ensure the environment is activated before running pytest.
