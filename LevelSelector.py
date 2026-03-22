@@ -1,5 +1,6 @@
 import pygame
 import mainGame
+import pandas as pd
 
 pygame.init()
 def selectLevel(userID):
@@ -187,7 +188,7 @@ def selectLevel(userID):
             screen = pygame.display.set_mode((width, height), flags=pygame.RESIZABLE)
         return screen
     # TEMP: just print that level is being played
-    def playLevelAtDifficulty(levelNumber, difficulty, playableDifficulties, screen, fullscreen, oldWidth, oldHeight, monitorWidth, monitorHeight):
+    def playLevelAtDifficulty(levelNumber, difficulty, playableDifficulties, screen, fullscreen, oldWidth, oldHeight, monitorWidth, monitorHeight, userID):
         levelCompleted = False
         if playableDifficulties[difficulty] >= levelNumber:
             if levelNumber < 2:
@@ -198,13 +199,15 @@ def selectLevel(userID):
         else:
             print(f'cannot play level {levelNumber + 1} at difficulty {difficulty}')
         if levelCompleted:
-            return updatePlayableAfterLevelCompleted(playableDifficulties, levelNumber, difficulty)
+            return updatePlayableAfterLevelCompleted(playableDifficulties, levelNumber, difficulty, userID)
         return playableDifficulties
-    def updatePlayableAfterLevelCompleted(previouslyPlayable, levelCompleted, difficultyCompleted):
+    def updatePlayableAfterLevelCompleted(previouslyPlayable, levelCompleted, difficultyCompleted, userID):
         levelPlayable = levelCompleted + 1
         for i in range(difficultyCompleted + 1):
             if previouslyPlayable[i] < levelPlayable:
                 previouslyPlayable[i] = levelPlayable
+        if userID != "-1":
+            savePlayableLevels(userID, previouslyPlayable)
         return previouslyPlayable
     def updateButtonSizes(screen, buttons):
         screenWidth = screen.get_width()
@@ -221,10 +224,19 @@ def selectLevel(userID):
     def loadPlayableLevels(userID):
         if userID == "-1":
             return [0, 0, 0]
-        playableEasy = 0
-        playableNormal = 0
-        playableHard = 0
+        df = pd.read_csv("users.csv")
+        userIndex = df.index[df['username'] == userID].tolist()[0]
+        playableEasy = df.at[userIndex, 'playableEasy']
+        playableNormal = df.at[userIndex, 'playableNormal']
+        playableHard = df.at[userIndex, 'playableHard']
         return [playableEasy, playableNormal, playableHard]
+    def savePlayableLevels(userID, playable):
+        df = pd.read_csv("users.csv")
+        userIndex = df.index[df['username'] == userID].tolist()[0]
+        df.at[userIndex, 'playableEasy'] = playable[0]
+        df.at[userIndex, 'playableNormal'] = playable[1]
+        df.at[userIndex, 'playableHard'] = playable[2]
+        df.to_csv("users.csv")
     monitorInfo = pygame.display.Info()
     monitorWidth, monitorHeight = monitorInfo.current_w, monitorInfo.current_h
 
@@ -245,7 +257,7 @@ def selectLevel(userID):
     totalLevels = 10
     # TEMP: hardcoded, will be found from csv
     # playableDifficulties [10, 8, 6] means that level 11 can be played on easy, level 9 can be played on normal, level 7 can be played on hard. I gave them with index start of 0
-    playableDifficulties = [0, 0, 0]
+    playableDifficulties = loadPlayableLevels(userID)
     levelInfo = [{
         'font': pygame.font.Font('assets/upheavtt.ttf', 32),
         'levelNumber': i + 1,
@@ -275,7 +287,7 @@ def selectLevel(userID):
                 if levelSelected > -1:
                     for buttonI, button in enumerate(buttons):
                         if button.getClicked(mx, my):
-                            playableDifficulties = playLevelAtDifficulty(levelSelected, buttonI, playableDifficulties, screen, fullscreen, oldWidth, oldHeight, monitorWidth, monitorHeight)
+                            playableDifficulties = playLevelAtDifficulty(levelSelected, buttonI, playableDifficulties, screen, fullscreen, oldWidth, oldHeight, monitorWidth, monitorHeight, userID)
                             rv.updateDifficulties(playableDifficulties)
                             updateRvSize = True
                             buttonClicked = True
@@ -315,4 +327,4 @@ def selectLevel(userID):
         pygame.display.flip()
 
 if __name__ == '__main__':
-    selectLevel("-1")
+    selectLevel("player1")
