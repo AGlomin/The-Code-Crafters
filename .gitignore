@@ -6,3 +6,6 @@ __pycache__/
 # local debug / recovery
 Telemetry/telemetry_from_github.csv
 dashboard/dash_err.txt
+
+__pycache__/
+*.pyc
