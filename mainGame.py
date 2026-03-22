@@ -142,7 +142,7 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
                 agentAttack = max(1, row.base_attack + enemy_attack)
                 agentRange = max(1, row.attack_range + enemy_range)
                 agentSpeed = max(1, row.move_speed + enemy_speed)
-                sprite_name = f"{row.char_label}Proto" if row.char_label == "en2" else f"{row.char_label}"
+                sprite_name = f"{row.char_label}"
                 enemyInformation.append(
                     c.ENEMY(
                         agentHP,
