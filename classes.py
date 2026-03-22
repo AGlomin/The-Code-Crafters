@@ -188,7 +188,7 @@ class AGENT:
         xRender, yRender, sizeRender, yDir = self.getRenderPosAndSize(tiles, moveFrame, True)
         animFrame = frame % 4
         # Medic has animation (supports any with name eventually)
-        if self.spritesheetName in ["medic", "brawler"]:
+        if self.spritesheetName in ["medic", "brawler", "bomber", "en0"]:
             spritesheetCol = animFrame
             """
             ROWS:
@@ -484,7 +484,7 @@ class MEDIC(PLAYER):
         for player in players:
             playerPos, _ = player.getPositions()
             distToPlayer = self.pos.distance_to(playerPos)
-            if distToPlayer <= self.atkRange and distToPlayer != 0: # If distance is 0, then this is the healer, so can skip
+            if distToPlayer <= self.atkRange and distToPlayer != 0 and player.findAlive() == 1: # If distance is 0, then this is the healer, so can skip
                 healedPlayers.append(player.getLabel())
                 player.loseHP(-1 * self.atk) # Multiply by -1 meaning that the player will GAIN hp
         return healedPlayers

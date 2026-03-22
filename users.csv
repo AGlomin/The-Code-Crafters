@@ -1,6 +1,19 @@
-user_id,username,password,role,difficulty,can_play,can_dashboard,can_balance
-U001,player1,pass123,player,easy,True,False,False
-U002,player2,pass234,player,balanced,True,False,False
-U003,designer1,design123,designer,balanced,True,True,True
-U004,maintainer1,maintain123,maintainer,hard,True,True,True
-
+user_id,username,password,role,can_play,can_dashboard,can_balance,playableEasy,playableNormal,playableHard
+U001,player1,pass123,player,TRUE,FALSE,FALSE,0,0,0
+U002,player2,pass234,player,TRUE,FALSE,FALSE,0,0,0
+U003,designer1,design123,designer,TRUE,TRUE,TRUE,0,0,0
+U004,maintainer1,maintain123,maintainer,TRUE,TRUE,TRUE,0,0,0
+,,,,,,,,,
+### username and passwords,,,,,,,,,
+## player 1,,,,,,,,,
+# username: player1,,,,,,,,,
+# password: pass123,,,,,,,,,
+## player 2,,,,,,,,,
+# username: player2,,,,,,,,,
+# password: pass234,,,,,,,,,
+## designer,,,,,,,,,
+# username: designer1,,,,,,,,,
+# password: design23,,,,,,,,,
+## maintainer,,,,,,,,,
+# username: maintainer1,,,,,,,,,
+# password: maintain123,,,,,,,,,

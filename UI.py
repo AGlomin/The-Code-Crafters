@@ -5,83 +5,138 @@ import subprocess
 import sys
 import os
 
-# store currently logged-in user
 current_user = None
-
-# get project directory path
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+BG_COLOR = "#1e1e2f"
+PANEL_COLOR = "#2a2a40"
+TITLE_COLOR = "#00e5ff"
+TEXT_COLOR = "#ffffff"
+BUTTON_COLOR = "#00ffcc"
+BUTTON_TEXT = "#111111"
+ENTRY_BG = "#f4f4f4"
+
+GAME_FONT = ("upheavtt", 18)
+SUBTITLE_FONT = ("upheavtt", 12)
+BODY_FONT = ("Arial", 11)
+BUTTON_FONT = ("upheavtt", 12)
 
 
 def open_game():
-    """Launch main game script."""
-    game_path = os.path.join(BASE_DIR, "mainGame.py")
+    """Launch the level selector / game entry screen."""
+    game_path = os.path.join(BASE_DIR, "LevelSelector.py")
     root.destroy()
-    subprocess.Popen([sys.executable, game_path])
+    subprocess.Popen([sys.executable, game_path], cwd=BASE_DIR)
 
 
 def open_dashboard():
-    """Launch dashboard script."""
+    """Launch the analytics dashboard."""
     dashboard_path = os.path.join(BASE_DIR, "dashboard", "dashboard.py")
-    subprocess.Popen([sys.executable, dashboard_path])
+    subprocess.Popen([sys.executable, dashboard_path], cwd=BASE_DIR)
 
 
 def open_balancer():
-    """Placeholder for balancing toolkit."""
-    messagebox.showinfo("Balancer", "Balancer screen not connected yet")
+    """Launch the balancing toolkit UI."""
+    balancer_path = os.path.join(BASE_DIR, "balancing_toolkit", "balancer_ui.py")
+    subprocess.Popen([sys.executable, balancer_path], cwd=BASE_DIR)
+
+
+def make_game_button(parent, text, command):
+    return tk.Button(
+        parent,
+        text=text,
+        command=command,
+        width=22,
+        height=1,
+        bg=BUTTON_COLOR,
+        fg=BUTTON_TEXT,
+        activebackground="#7fffe8",
+        activeforeground="#000000",
+        relief="flat",
+        bd=0,
+        cursor="hand2",
+        font=BUTTON_FONT
+    )
 
 
 def show_role_menu(user):
     """Display menu options based on user permissions."""
-
     global current_user
     current_user = user
 
-    # clear current UI widgets
     for widget in root.winfo_children():
         widget.destroy()
 
     permissions = get_permissions(user)
 
-    # welcome text
-    tk.Label(
-        root,
-        text=f"Welcome, {user['username']}",
-        font=("Arial", 16, "bold")
-    ).pack(pady=10)
+    root.configure(bg=BG_COLOR)
+
+    container = tk.Frame(root, bg=BG_COLOR)
+    container.pack(fill="both", expand=True)
+
+    card = tk.Frame(
+        container,
+        bg=PANEL_COLOR,
+        bd=0,
+        padx=30,
+        pady=25
+    )
+    card.place(relx=0.5, rely=0.5, anchor="center")
 
     tk.Label(
-        root,
-        text=f"Role: {user['role'].title()} | Difficulty: {user['difficulty'].title()}",
-        font=("Arial", 11)
-    ).pack(pady=5)
+        card,
+        text=f"WELCOME, {user['username'].upper()}",
+        font=GAME_FONT,
+        fg=TITLE_COLOR,
+        bg=PANEL_COLOR
+    ).pack(pady=(0, 18))
 
     tk.Label(
-        root,
-        text="Select an option:",
-        font=("Arial", 12)
-    ).pack(pady=10)
+        card,
+        text=f"Role: {user['role'].title()}",
+        font=SUBTITLE_FONT,
+        fg=TEXT_COLOR,
+        bg=PANEL_COLOR
+    ).pack(pady=(0, 10))
 
-    # show buttons depending on permissions
+    tk.Label(
+        card,
+        text="Select an option",
+        font=BODY_FONT,
+        fg=TEXT_COLOR,
+        bg=PANEL_COLOR
+    ).pack(pady=(0, 18))
+
     if permissions["play"]:
-        tk.Button(root, text="Open Game", width=20, command=open_game).pack(pady=5)
+        make_game_button(card, "Open Game", open_game).pack(pady=6)
 
     if permissions["dashboard"]:
-        tk.Button(root, text="Open Dashboard", width=20, command=open_dashboard).pack(pady=5)
+        make_game_button(card, "Open Dashboard", open_dashboard).pack(pady=6)
 
     if permissions["balance"]:
-        tk.Button(root, text="Open Balancer", width=20, command=open_balancer).pack(pady=5)
+        make_game_button(card, "Open Balancer", open_balancer).pack(pady=6)
 
-    # logout button returns to login screen
-    tk.Button(root, text="Logout", width=20, command=show_login_page).pack(pady=15)
+    tk.Button(
+        card,
+        text="Logout",
+        width=22,
+        command=show_login_page,
+        bg="#ffcc66",
+        fg="#111111",
+        activebackground="#ffd98c",
+        activeforeground="#000000",
+        relief="flat",
+        bd=0,
+        cursor="hand2",
+        font=BUTTON_FONT
+    ).pack(pady=(18, 0))
 
 
 def login():
-    """Validate login credentials."""
-
+    """Validate credentials entered in the login form."""
     username = entry_username.get().strip()
     password = entry_password.get().strip()
 
-    # prevent empty login attempts
     if not username or not password:
         messagebox.showerror("Login Failed", "Please enter username and password")
         return
@@ -89,46 +144,94 @@ def login():
     user = check_login(username, password)
 
     if user:
-        messagebox.showinfo("Login", "Login successful")
         show_role_menu(user)
     else:
         messagebox.showerror("Login Failed", "Incorrect username or password")
 
 
 def show_login_page():
-    """Create login screen."""
-
-    # clear current widgets
+    """Create the styled login interface."""
     for widget in root.winfo_children():
         widget.destroy()
 
-    tk.Label(root, text="Indie Game Telemetry Login", font=("Arial", 16, "bold")).pack(pady=15)
+    root.configure(bg=BG_COLOR)
 
-    tk.Label(root, text="Username").pack(pady=5)
+    container = tk.Frame(root, bg=BG_COLOR)
+    container.pack(fill="both", expand=True)
+
+    card = tk.Frame(
+        container,
+        bg=PANEL_COLOR,
+        bd=0,
+        padx=35,
+        pady=30
+    )
+    card.place(relx=0.5, rely=0.5, anchor="center")
+
+    tk.Label(
+        card,
+        text="INDIE TELEMETRY SYSTEM",
+        font=GAME_FONT,
+        fg=TITLE_COLOR,
+        bg=PANEL_COLOR
+    ).pack(pady=(0, 8))
+
+    tk.Label(
+        card,
+        text="Login to continue",
+        font=BODY_FONT,
+        fg=TEXT_COLOR,
+        bg=PANEL_COLOR
+    ).pack(pady=(0, 18))
+
+    tk.Label(
+        card,
+        text="Username",
+        font=SUBTITLE_FONT,
+        fg=TEXT_COLOR,
+        bg=PANEL_COLOR
+    ).pack(anchor="w", pady=(0, 4))
+
     global entry_username
-    entry_username = tk.Entry(root, width=25)
-    entry_username.pack(pady=5)
+    entry_username = tk.Entry(
+        card,
+        width=26,
+        font=BODY_FONT,
+        bg=ENTRY_BG,
+        fg="#000000",
+        relief="flat",
+        bd=0
+    )
+    entry_username.pack(pady=(0, 12), ipady=6)
 
-    tk.Label(root, text="Password").pack(pady=5)
+    tk.Label(
+        card,
+        text="Password",
+        font=SUBTITLE_FONT,
+        fg=TEXT_COLOR,
+        bg=PANEL_COLOR
+    ).pack(anchor="w", pady=(0, 4))
+
     global entry_password
-    entry_password = tk.Entry(root, width=25, show="*")
-    entry_password.pack(pady=5)
+    entry_password = tk.Entry(
+        card,
+        width=26,
+        show="*",
+        font=BODY_FONT,
+        bg=ENTRY_BG,
+        fg="#000000",
+        relief="flat",
+        bd=0
+    )
+    entry_password.pack(pady=(0, 18), ipady=6)
 
-    tk.Button(root, text="Login", width=20, command=login).pack(pady=15)
+    make_game_button(card, "Login", login).pack(pady=(0, 6))
 
 
-# create main Tkinter window
 root = tk.Tk()
-root.title("Login")
-root.geometry("400x350")
+root.title("Indie Game Telemetry System")
+root.geometry("500x420")
+root.configure(bg=BG_COLOR)
 
-# bring window to front on launch
-root.lift()
-root.attributes("-topmost", True)
-root.after(200, lambda: root.attributes("-topmost", False))
-
-# load login interface
 show_login_page()
-
-# start UI event loop
 root.mainloop()
