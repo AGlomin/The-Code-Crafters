@@ -43,22 +43,22 @@
   },
   
   "level1": {
-    "difficultyAttackScaling":0.25,
+    "difficultyAttackScaling":0.2,
 
     "brawler": {
-      "health": 0,
+      "health": 4,
       "attack": 0,
       "attack_range":0,
       "move_speed":0
     },
     "bomber": {
-      "health": 0,
+      "health": 4,
       "attack": 0,
       "attack_range":0,
       "move_speed":0
     },
     "medic": {
-      "health": 3,
+      "health": 5,
       "attack": 2,
       "attack_range":0,
       "move_speed":0
@@ -73,13 +73,13 @@
     "en1": {
       "health": 0,
       "attack": 0,
-      "attack_range":-1,
+      "attack_range":-2,
       "move_speed":0
     },
     "en2": {
       "health": 0,
       "attack": 0,
-      "attack_range":0,
+      "attack_range":-1,
       "move_speed":0
     }
    },
