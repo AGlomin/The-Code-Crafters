@@ -150,7 +150,7 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
                         agentRange,
                         agentSpeed,
                         pygame.math.Vector2(0, 0),
-                        f"{row.char_label}Proto",
+                        sprite_name,
                         row.char_label,
                         difficultyMod,
                     )
