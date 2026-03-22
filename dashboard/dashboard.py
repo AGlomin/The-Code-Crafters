@@ -1,79 +1,130 @@
+import os
+import sys
 import tkinter as tk
-
 import matplotlib
-matplotlib.use("TkAgg") 
+matplotlib.use("TkAgg")
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from collections import defaultdict
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
+
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 from analytics import load_events, compute_funnel, stage_failures
 
-from collections import defaultdict
+# theme
+BG_COLOR = "#171a2b"
+PANEL_COLOR = "#202540"
+CARD_COLOR = "#242a48"
+TEXT_COLOR = "#f2f4ff"
+MUTED_TEXT = "#c7cbe6"
+TITLE_COLOR = "#38e1ff"
 
-def compute_stage_dropoff(events):
-    starts = defaultdict(int)
-    fails = defaultdict(int)
+BAR_BLUE = "#5b8def"
+BAR_GREEN = "#6cc36c"
+BAR_ORANGE = "#f2a541"
+BAR_RED = "#e76f6f"
+BAR_TEAL = "#69c9c3"
+BAR_GREY = "#aab2c8"
 
-    for e in events:
-        et = e.get("event_type")
-        key = (e.get("level_id"), e.get("stage_id"))
-
-        if et == "stage_start":
-            starts[key] += 1
-        elif et == "stage_fail":
-            fails[key] += 1
-
-    drop = {}
-    for key, s in starts.items():
-        f = fails.get(key, 0)
-        drop[key] = (f / s) * 100 if s else 0.0
-
-    return drop
+TITLE_FONT = ("Arial", 18, "bold")
+BODY_FONT = ("Arial", 11)
+VALUE_FONT = ("Arial", 16, "bold")
 
 
-
-#small UI helpers
-def clear_frame(frame: tk.Frame):
-    for w in frame.winfo_children():
-        w.destroy()
+def clear_frame(frame):
+    for widget in frame.winfo_children():
+        widget.destroy()
 
 
-def make_card(parent: tk.Frame, title: str, value: str) -> tk.Frame:
-    card = tk.Frame(parent, bd=1, relief="solid", padx=12, pady=10)
-    tk.Label(card, text=title, font=("TkDefaultFont", 11)).pack(anchor="w")
-    tk.Label(card, text=value, font=("TkDefaultFont", 18, "bold")).pack(anchor="w")
+def format_stage_label(level_id, stage_id):
+    return f"Level {level_id} – Stage {stage_id}"
+
+
+def make_card(parent, title, value, value_color=TEXT_COLOR):
+    card = tk.Frame(parent, bg=CARD_COLOR, padx=14, pady=12)
+
+    tk.Label(
+        card,
+        text=title,
+        font=BODY_FONT,
+        fg=MUTED_TEXT,
+        bg=CARD_COLOR
+    ).pack(anchor="w")
+
+    tk.Label(
+        card,
+        text=value,
+        font=VALUE_FONT,
+        fg=value_color,
+        bg=CARD_COLOR
+    ).pack(anchor="w", pady=(4, 0))
+
     return card
 
 
-def embed_bar_chart(parent: tk.Frame, title: str, labels, values, rotate=25, show_labels=True, percent_only=False):
-    fig, ax = plt.subplots(figsize=(4, 3))
-    colors = ["steelblue", "steelblue", "green", "red", "orange", "green"]
-    ax.bar(labels, values, color=colors)
-    # add value + percentage labels above bars
-    if show_labels:
-        max_val = max(values) if values else 1
+def compute_stage_starts(events):
+    starts = defaultdict(int)
+    for e in events:
+        if e.get("event_type") == "stage_start":
+            key = (e.get("level_id"), e.get("stage_id"))
+            starts[key] += 1
+    return dict(starts)
 
-        for i, v in enumerate(values):
-            pct = (v / max_val) * 100 if max_val else 0
 
-            if percent_only:
-                label = f"{v:.1f}%"
-            else:
-                label = f"{v}\n({pct:.0f}%)"
+def compute_stage_fail_rates(events):
+    starts = compute_stage_starts(events)
+    fails = stage_failures(events)
 
-            ax.text(
-                i,
-                v * 0.5,
-                label,
-                ha="center",
-                va="center",
-                color="black",
-                fontsize=9,
-                fontweight="bold"
-            )
-        ax.set_title(title)
-        ax.tick_params(axis="x", rotation=rotate)
-        fig.tight_layout()
+    fail_rates = {}
+    for key, start_count in starts.items():
+        fail_count = fails.get(key, 0)
+        fail_rates[key] = (fail_count / start_count) * 100 if start_count else 0.0
+
+    return fail_rates
+
+
+def draw_bar_chart(parent, title, labels, values, color, value_format="count", y_label=None):
+    fig, ax = plt.subplots(figsize=(4.6, 3.2))
+    fig.patch.set_facecolor(PANEL_COLOR)
+    ax.set_facecolor(PANEL_COLOR)
+
+    bars = ax.bar(labels, values, color=color, edgecolor="#111522", linewidth=1.0)
+
+    ax.set_title(title, color=TEXT_COLOR, fontsize=15, pad=10)
+    if y_label:
+        ax.set_ylabel(y_label, color=MUTED_TEXT, fontsize=10)
+
+    ax.tick_params(axis="x", colors=MUTED_TEXT, rotation=20)
+    ax.tick_params(axis="y", colors=MUTED_TEXT)
+
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_color(MUTED_TEXT)
+    ax.spines["bottom"].set_color(MUTED_TEXT)
+
+    ax.grid(axis="y", linestyle="--", alpha=0.20, color=MUTED_TEXT)
+
+    for bar, val in zip(bars, values):
+        label = f"{val:.1f}%" if value_format == "percent" else f"{int(val)}"
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height(),
+            label,
+            ha="center",
+            va="bottom",
+            fontsize=10,
+            color=TEXT_COLOR,
+            fontweight="bold"
+        )
+
+    fig.tight_layout()
 
     canvas = FigureCanvasTkAgg(fig, master=parent)
     canvas.draw()
@@ -82,116 +133,198 @@ def embed_bar_chart(parent: tk.Frame, title: str, labels, values, rotate=25, sho
     plt.close(fig)
 
 
-
-#dashboard refresh logic
 def refresh_dashboard():
     events = load_events()
     funnel = compute_funnel(events)
     failures = stage_failures(events)
-    dropoff = compute_stage_dropoff(events)
+    fail_rates = compute_stage_fail_rates(events)
 
-    #clear previous UI
     clear_frame(kpi_row)
     clear_frame(left_panel)
     clear_frame(mid_panel)
     clear_frame(right_panel)
-    text.delete("1.0", tk.END)
-    
+    summary_text.delete("1.0", tk.END)
 
     if not events:
-        text.insert(tk.END, "No telemetry data found.\n")
+        summary_text.insert(tk.END, "No telemetry data found.")
         return
 
-    #KPIs
-    sessions = len({e.get("session_id") for e in events if e.get("session_id") is not None})
-    stage_starts = funnel.get("Stage Starts", 0)
-    stage_completes = funnel.get("Stage Completes", 0)
-    stage_fails = funnel.get("Stage Fails", 0)
+    sessions = len({e.get("session_id") for e in events if e.get("session_id")})
+    stage_starts_total = funnel.get("Stage Starts", 0)
+    stage_completes_total = funnel.get("Stage Completes", 0)
+    stage_fails_total = funnel.get("Stage Fails", 0)
     completion_rate = funnel.get("Completion Rate %", 0.0)
 
-    make_card(kpi_row, "Sessions", str(sessions)).pack(side="left", padx=8, fill="x", expand=True)
-    make_card(kpi_row, "Stage Starts", str(stage_starts)).pack(side="left", padx=8, fill="x", expand=True)
-    make_card(kpi_row, "Stage Fails", str(stage_fails)).pack(side="left", padx=8, fill="x", expand=True)
-    make_card(kpi_row, "Completion Rate", f"{completion_rate:.1f}%").pack(side="left", padx=8, fill="x", expand=True)
+    make_card(kpi_row, "Sessions", str(sessions), BAR_BLUE).pack(side="left", padx=8, fill="x", expand=True)
+    make_card(kpi_row, "Stage Starts", str(stage_starts_total), BAR_TEAL).pack(side="left", padx=8, fill="x", expand=True)
+    make_card(kpi_row, "Stage Fails", str(stage_fails_total), BAR_RED).pack(side="left", padx=8, fill="x", expand=True)
+    make_card(kpi_row, "Completion Rate", f"{completion_rate:.1f}%", BAR_GREEN).pack(side="left", padx=8, fill="x", expand=True)
 
-    #chart 1: Funnel counts (exclude %)
-    funnel_keys = ["Level Starts", "Stage Starts", "Stage Completes", "Stage Fails", "Sessions Ended", "Level Completes"]
-    funnel_vals = [funnel.get(k, 0) for k in funnel_keys]
-    embed_bar_chart(left_panel, "Progression Funnel (Counts)", funnel_keys, funnel_vals, rotate=35)
+    funnel_labels = [
+        "Level Starts",
+        "Stage Starts",
+        "Stage Completes",
+        "Stage Fails",
+        "Sessions Ended",
+        "Level Completes"
+    ]
+    funnel_values = [funnel.get(label, 0) for label in funnel_labels]
 
-    #chart 2: Drop-off rate (%), top 10 worst stages
-    if dropoff:
-        items = sorted(dropoff.items(), key=lambda x: x[1], reverse=True)[:10]
-        labels = [f"L{lvl}-S{stg}" for (lvl, stg), _ in items]
-        values = [round(v, 1) for _, v in items]
-        embed_bar_chart(mid_panel, "Top 10 Drop-off Stages (%)", labels, values, rotate=35, percent_only=True)
+    draw_bar_chart(
+        left_panel,
+        "Progression Funnel (Counts)",
+        funnel_labels,
+        funnel_values,
+        [BAR_BLUE, BAR_TEAL, BAR_GREEN, BAR_RED, BAR_GREY, BAR_ORANGE],
+        value_format="count",
+        y_label="Number of events"
+    )
+
+    if fail_rates:
+        top_fail_rate_items = sorted(fail_rates.items(), key=lambda x: x[1], reverse=True)[:5]
+        labels = [format_stage_label(level, stage) for (level, stage), _ in top_fail_rate_items]
+        values = [rate for _, rate in top_fail_rate_items]
+
+        draw_bar_chart(
+            mid_panel,
+            "Highest Stage Fail Rates (%)",
+            labels,
+            values,
+            BAR_ORANGE,
+            value_format="percent",
+            y_label="Fail rate (%)"
+        )
     else:
-        tk.Label(mid_panel, text="No stage_start events found.", font=("TkDefaultFont", 14)).pack(padx=10, pady=10)
+        tk.Label(
+            mid_panel,
+            text="No stage fail-rate data available.",
+            bg=PANEL_COLOR,
+            fg=TEXT_COLOR,
+            font=BODY_FONT
+        ).pack(pady=30)
 
-    #chart 3: Top failing stages
     if failures:
-        items = sorted(failures.items(), key=lambda x: x[1], reverse=True)[:10]
-        items = sorted(failures.items(), key=lambda x: x[1], reverse=True)
-        labels = [f"L{lvl}-S{stg}" for (lvl, stg), _ in items[:10]]
-        values = [v for _, v in items[:10]]
-        embed_bar_chart(right_panel, "Top 10 Failing Stages", labels, values, rotate=35)
+        top_fail_count_items = sorted(failures.items(), key=lambda x: x[1], reverse=True)[:5]
+        labels = [format_stage_label(level, stage) for (level, stage), _ in top_fail_count_items]
+        values = [count for _, count in top_fail_count_items]
+
+        draw_bar_chart(
+            right_panel,
+            "Highest Stage Fail Counts",
+            labels,
+            values,
+            BAR_RED,
+            value_format="count",
+            y_label="Number of fails"
+        )
     else:
-        tk.Label(right_panel, text="No stage_fail events found.", font=("TkDefaultFont", 14)).pack(padx=10, pady=10)
+        tk.Label(
+            right_panel,
+            text="No stage failure data available.",
+            bg=PANEL_COLOR,
+            fg=TEXT_COLOR,
+            font=BODY_FONT
+        ).pack(pady=30)
 
-    #text summary (short + readable)
-    text.insert(tk.END, "Summary\n")
-    text.insert(tk.END, "-------\n")
-    text.insert(tk.END, f"Sessions: {sessions}\n")
-    text.insert(tk.END, f"Stage Starts: {stage_starts}\n")
-    text.insert(tk.END, f"Stage Completes: {stage_completes}\n")
-    text.insert(tk.END, f"Stage Fails: {stage_fails}\n")
-    text.insert(tk.END, f"Completion Rate: {completion_rate:.1f}%\n\n")
+    worst_fail_rate_stage = None
+    worst_fail_rate = 0.0
+    if fail_rates:
+        worst_fail_rate_stage, worst_fail_rate = max(fail_rates.items(), key=lambda x: x[1])
 
-    worst = max(dropoff.values()) if dropoff else 0.0
-    text.insert(tk.END, f"Highest Drop-off Stage (%): {worst:.1f}%\n")
+    worst_fail_count_stage = None
+    worst_fail_count = 0
+    if failures:
+        worst_fail_count_stage, worst_fail_count = max(failures.items(), key=lambda x: x[1])
 
-    text.insert(tk.END, "Funnel breakdown:\n")
-    for k in funnel_keys:
-        text.insert(tk.END, f"  {k}: {funnel.get(k, 0)}\n")
+    summary_lines = [
+        "SUMMARY",
+        "",
+        f"Sessions recorded: {sessions}",
+        f"Total stage starts: {stage_starts_total}",
+        f"Total stage completions: {stage_completes_total}",
+        f"Total stage failures: {stage_fails_total}",
+        f"Overall stage completion rate: {completion_rate:.1f}%",
+        ""
+    ]
+
+    if worst_fail_rate_stage is not None:
+        summary_lines.append(
+            f"Highest fail-rate stage: {format_stage_label(*worst_fail_rate_stage)} at {worst_fail_rate:.1f}%."
+        )
+
+    if worst_fail_count_stage is not None:
+        summary_lines.append(
+            f"Highest fail-count stage: {format_stage_label(*worst_fail_count_stage)} with {worst_fail_count} recorded fails."
+        )
+
+    summary_lines.append("")
+    summary_lines.append(
+        "Interpretation: the fail-rate chart shows which stage is hardest relative to attempts, while the fail-count chart shows where players fail most often in total."
+    )
+
+    summary_text.insert("1.0", "\n".join(summary_lines))
 
 
-# UI layout
 root = tk.Tk()
-root.title("Telemetry Analytics Dashboard")
-root.geometry("1300x800")
+root.title("Telemetry Dashboard")
+root.geometry("1450x860")
+root.configure(bg=BG_COLOR)
 
-#top bar
-top = tk.Frame(root, padx=12, pady=12)
-top.pack(fill="x")
+top_bar = tk.Frame(root, bg=BG_COLOR, padx=18, pady=14)
+top_bar.pack(fill="x")
 
-tk.Label(top, text="Telemetry Analytics Dashboard", font=("TkDefaultFont", 18, "bold")).pack(side="left")
-tk.Button(top, text="Refresh", width=12, command=refresh_dashboard).pack(side="right")
+tk.Label(
+    top_bar,
+    text="GAME TELEMETRY DASHBOARD",
+    font=TITLE_FONT,
+    fg=TITLE_COLOR,
+    bg=BG_COLOR
+).pack(side="left")
 
-#KPI row
-kpi_row = tk.Frame(root, padx=12, pady=6)
+tk.Button(
+    top_bar,
+    text="Refresh",
+    command=refresh_dashboard,
+    bg="#edf2ff",
+    fg="#111522",
+    font=BODY_FONT,
+    relief="flat",
+    padx=14,
+    pady=6,
+    cursor="hand2"
+).pack(side="right")
+
+kpi_row = tk.Frame(root, bg=BG_COLOR, padx=18, pady=6)
 kpi_row.pack(fill="x")
 
-#charts row
-#charts row
-charts_row = tk.Frame(root, padx=12, pady=12)
+charts_row = tk.Frame(root, bg=BG_COLOR, padx=18, pady=12)
 charts_row.pack(fill="both", expand=True)
 
-left_panel = tk.Frame(charts_row, bd=1, relief="solid")
-left_panel.pack(side="left", fill="both", expand=True, padx=(0, 8))
+left_panel = tk.Frame(charts_row, bg=PANEL_COLOR)
+left_panel.pack(side="left", fill="both", expand=True, padx=8)
 
-mid_panel = tk.Frame(charts_row, bd=1, relief="solid")
-mid_panel.pack(side="left", fill="both", expand=True, padx=(8, 8))
+mid_panel = tk.Frame(charts_row, bg=PANEL_COLOR)
+mid_panel.pack(side="left", fill="both", expand=True, padx=8)
 
-right_panel = tk.Frame(charts_row, bd=1, relief="solid")
-right_panel.pack(side="right", fill="both", expand=True, padx=(8, 0))
+right_panel = tk.Frame(charts_row, bg=PANEL_COLOR)
+right_panel.pack(side="left", fill="both", expand=True, padx=8)
 
-#bottom text area
-bottom = tk.Frame(root, padx=12, pady=0)
-bottom.pack(fill="both", pady=(0, 12))
+bottom_panel = tk.Frame(root, bg=BG_COLOR, padx=18, pady=0)
+bottom_panel.pack(fill="both", pady=(0, 18))
 
-text = tk.Text(bottom, height=9, font=("TkDefaultFont", 12))
-text.pack(fill="both", expand=True)
+summary_text = tk.Text(
+    bottom_panel,
+    height=10,
+    bg="#0e1224",
+    fg=TEXT_COLOR,
+    insertbackground=TEXT_COLOR,
+    font=BODY_FONT,
+    relief="flat",
+    wrap="word",
+    padx=12,
+    pady=10
+)
+summary_text.pack(fill="both", expand=True)
 
-#initial render
 refresh_dashboard()
 root.mainloop()
