@@ -46,7 +46,27 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
         enemyInformation = []
         df = pd.read_csv("agent_information.csv")
         for row in df.itertuples():
-            # Default change to 0
+            try:
+                agentHP = row.health_points + params[f"level{levelNumber}"][row.char_label]["health"]
+            except:
+                agentHP = row.health_points
+            try:
+                agentAttack = row.base_attack + params[f"level{levelNumber}"][row.char_label]["attack"]
+            except:
+                agentAttack = row.base_attack
+            try:
+                agentRange = row.attack_range + params[f"level{levelNumber}"][row.char_label]["attack_range"]
+            except:
+                agentRange = row.attack_range
+            try:
+                agentSpeed = row.move_speed + params[f"level{levelNumber}"][row.char_label]["move_speed"]
+            except:
+                agentSpeed = row.move_speed
+            agentHP = max(1, agentHP)
+            agentAttack = max(1, agentAttack)
+            agentRange = max(1, agentRange)
+            agentSpeed = max(1, agentSpeed)
+            """
             player_health = 0
             player_attack = 0
             player_range = 0
@@ -67,32 +87,20 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
                 enemy_attack += params["level" + str(levelNumber)]["enemy"]["attack"]
                 enemy_range += params["level" + str(levelNumber)]["enemy"]["attack_range"]
                 enemy_speed += params["level" + str(levelNumber)]["enemy"]["move_speed"]
-
+            """
             if row.char_label == 'medic':
-                agentHP = max(1, row.health_points + player_health)
-                agentAttack = max(1, row.base_attack + player_attack)
-                agentRange = max(1, row.attack_range + player_range)
-                agentSpeed = max(1, row.move_speed + player_speed)
                 playerInformation.append(c.MEDIC(agentHP, agentAttack, agentRange, agentSpeed, pygame.math.Vector2(0, 0), f"{row.char_label}", row.char_label))
             elif row.player_agent:
-                agentHP = max(1, row.health_points + player_health)
-                agentAttack = max(1, row.base_attack + player_attack)
-                agentRange = max(1, row.attack_range + player_range)
-                agentSpeed = max(1, row.move_speed + player_speed)
-                playerInformation.append(c.MEDIC(agentHP, agentAttack, agentRange, agentSpeed, pygame.math.Vector2(0, 0), f"{row.char_label}" if row.char_label == "brawler" else f"{row.char_label}Proto", row.char_label))
+                playerInformation.append(c.PLAYER(agentHP, agentAttack, agentRange, agentSpeed, pygame.math.Vector2(0, 0), f"{row.char_label}", row.char_label))
             else:
-                agentHP = max(1, row.health_points + enemy_health)
-                agentAttack = max(1, row.base_attack + enemy_attack)
-                agentRange = max(1, row.attack_range + enemy_range)
-                agentSpeed = max(1, row.move_speed + enemy_speed)
-                enemyInformation.append(c.MEDIC(agentHP, agentAttack, agentRange, agentSpeed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label, difficultyMod))
+                enemyInformation.append(c.ENEMY(agentHP, agentAttack, agentRange, agentSpeed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label, difficultyMod))
         return playerInformation, enemyInformation
-        """
+    """
   discarded code, greyed out incase new code is wrong.      
             if row.char_label == 'medic':
                 playerInformation.append(c.MEDIC(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}", row.char_label))
             elif row.player_agent:
-                playerInformation.append(c.PLAYER(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label))
+                playerInformation.append(c.PLAYER(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}", row.char_label))
             else:
                 enemyInformation.append(c.ENEMY(row.health_points, row.base_attack, row.attack_range, row.move_speed, pygame.math.Vector2(0, 0), f"{row.char_label}Proto", row.char_label, difficultyMod))
         return playerInformation, enemyInformation
