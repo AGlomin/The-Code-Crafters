@@ -191,7 +191,7 @@ def selectLevel(userID):
     def playLevelAtDifficulty(levelNumber, difficulty, playableDifficulties, screen, fullscreen, oldWidth, oldHeight, monitorWidth, monitorHeight, userID):
         levelCompleted = False
         if playableDifficulties[difficulty] >= levelNumber:
-            if levelNumber < 2:
+            if levelNumber < 3:
                 levelCompleted = mainGame.playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, monitorWidth, monitorHeight)
             else:
                 print(f'playing level {levelNumber + 1} at difficulty {difficulty}')
