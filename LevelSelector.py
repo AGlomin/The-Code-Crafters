@@ -327,4 +327,4 @@ def selectLevel(userID):
         pygame.display.flip()
 
 if __name__ == '__main__':
-    selectLevel("player1")
+    selectLevel("-1")
