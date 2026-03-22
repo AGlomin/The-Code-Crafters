@@ -125,7 +125,6 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
                 agentAttack = max(1, row.base_attack + player_attack)
                 agentRange = max(1, row.attack_range + player_range)
                 agentSpeed = max(1, row.move_speed + player_speed)
-                sprite_name = f"{row.char_label}" if row.char_label == "brawler" else f"{row.char_label}Proto"
                 playerInformation.append(
                     c.PLAYER(
                         agentHP,
@@ -133,7 +132,7 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
                         agentRange,
                         agentSpeed,
                         pygame.math.Vector2(0, 0),
-                        sprite_name,
+                        f"{row.char_label}",
                         row.char_label,
                     )
                 )
@@ -143,6 +142,7 @@ def playLevel(levelNumber, difficulty, screen, fullscreen, oldWidth, oldHeight, 
                 agentAttack = max(1, row.base_attack + enemy_attack)
                 agentRange = max(1, row.attack_range + enemy_range)
                 agentSpeed = max(1, row.move_speed + enemy_speed)
+                sprite_name = "en0" if row.char_label == "en0" else f"{row.char_label}Proto"
                 enemyInformation.append(
                     c.ENEMY(
                         agentHP,
