@@ -41,19 +41,19 @@
   "level1": {
     "difficultyAttackScaling": 0.25,
     "brawler": {
-      "health": 0,
+      "health": 4,
       "attack": 0,
       "attack_range": 0,
       "move_speed": 0
     },
     "bomber": {
-      "health": 0,
+      "health": 4,
       "attack": 0,
       "attack_range": 0,
       "move_speed": 0
     },
     "medic": {
-      "health": 3,
+      "health": 5,
       "attack": 2,
       "attack_range": 0,
       "move_speed": 0
