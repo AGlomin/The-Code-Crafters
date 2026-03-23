@@ -9,11 +9,15 @@ import rule_based_suggestions as rbs
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PARAMS_PATH = os.path.join(BASE_DIR, "parameters.json")
 
+TITLE_FONT = ("Arial", 20, "bold")
+BODY_FONT = ("Arial", 18)
+VALUE_FONT = ("Arial", 15, "bold")
+
 class BalancerUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Balancing Toolkit")
-        self.root.geometry("800x600")
+        self.root.geometry("1200x1000")
 
         self.params = self.load_params()
         self.entries = {}
@@ -34,8 +38,16 @@ class BalancerUI:
         self.top = tk.Frame(self.root, padx=12, pady=12, bg="#1e1e2f")
         self.top.pack(fill="x")
 
-        tk.Label(self.top, text="Balancing Toolkit", font=("upheavtt", 18, "bold"), fg="cyan", bg="#1e1e2f").pack(side="left")
-        self.level_dropdown = ttk.Combobox(self.top, values=list(self.params.keys()), font=("upheavtt", 16))
+        tk.Label(self.top, text="Balancing Toolkit", font=TITLE_FONT, fg="cyan", bg="#1e1e2f").pack(side="left")
+        
+        # Difficulty scaling entry
+        self.difficulty_frame = tk.Frame(self.top, bg="#1e1e2f")
+        self.difficulty_frame.pack(side="right", padx=(10, 0))
+        tk.Label(self.difficulty_frame, text="Difficulty Scaling:", fg="white", bg="#1e1e2f", font=BODY_FONT).pack(side="left")
+        self.difficulty_entry = tk.Entry(self.difficulty_frame, width=8, font=BODY_FONT)
+        self.difficulty_entry.pack(side="left")
+        
+        self.level_dropdown = ttk.Combobox(self.top, values=list(self.params.keys()), font=BODY_FONT)
         self.level_dropdown.pack(side="right")
         self.level_dropdown.bind("<<ComboboxSelected>>", self.load_level)
         self.level_dropdown.set(self.current_level)
@@ -44,26 +56,26 @@ class BalancerUI:
         self.players_row = tk.Frame(self.root, padx=12, pady=12)
         self.players_row.pack(fill="both", expand=True)
 
-        self.brawler_panel = tk.LabelFrame(self.players_row, text="Brawler", bd=1, relief="solid")
+        self.brawler_panel = tk.LabelFrame(self.players_row, text="Brawler", bd=1, relief="solid", font=BODY_FONT)
         self.brawler_panel.pack(side="left", fill="both", expand=True, padx=(0, 8))
 
-        self.bomber_panel = tk.LabelFrame(self.players_row, text="Bomber", bd=1, relief="solid")
+        self.bomber_panel = tk.LabelFrame(self.players_row, text="Bomber", bd=1, relief="solid", font=BODY_FONT)
         self.bomber_panel.pack(side="left", fill="both", expand=True, padx=(8, 8))
 
-        self.medic_panel = tk.LabelFrame(self.players_row, text="Medic", bd=1, relief="solid")
+        self.medic_panel = tk.LabelFrame(self.players_row, text="Medic", bd=1, relief="solid", font=BODY_FONT)
         self.medic_panel.pack(side="left", fill="both", expand=True, padx=(8, 0))
 
         # ---- Enemies row ----
         self.enemies_row = tk.Frame(self.root, padx=12, pady=12)
         self.enemies_row.pack(fill="both", expand=True)
 
-        self.en0_panel = tk.LabelFrame(self.enemies_row, text="en0", bd=1, relief="solid")
+        self.en0_panel = tk.LabelFrame(self.enemies_row, text="en0", bd=1, relief="solid", font=BODY_FONT)
         self.en0_panel.pack(side="left", fill="both", expand=True, padx=(0, 8))
 
-        self.en1_panel = tk.LabelFrame(self.enemies_row, text="en1", bd=1, relief="solid")
+        self.en1_panel = tk.LabelFrame(self.enemies_row, text="en1", bd=1, relief="solid", font=BODY_FONT)
         self.en1_panel.pack(side="left", fill="both", expand=True, padx=(8, 8))
 
-        self.en2_panel = tk.LabelFrame(self.enemies_row, text="en2", bd=1, relief="solid")
+        self.en2_panel = tk.LabelFrame(self.enemies_row, text="en2", bd=1, relief="solid", font=BODY_FONT)
         self.en2_panel.pack(side="left", fill="both", expand=True, padx=(8, 0))
 
         # Render parameters for current selected level
@@ -76,7 +88,7 @@ class BalancerUI:
             command=self.apply_changes,
             bg="#00ffcc",
             fg="black",
-            font=("upheavtt", 12)
+            font=BODY_FONT
         ).pack(pady=5)
 
         tk.Button(
@@ -85,7 +97,7 @@ class BalancerUI:
             command=self.run_suggestions,
             bg="#ffcc00",
             fg="black",
-            font=("upheavtt", 12)
+            font=BODY_FONT
         ).pack(pady=5)
 
         self.output = tk.Text(self.root, height=6)
@@ -99,6 +111,11 @@ class BalancerUI:
 
         #linking backend names to display names
         level_data = self.params[self.current_level]
+        
+        # Set difficulty scaling value
+        self.difficulty_entry.delete(0, tk.END)
+        self.difficulty_entry.insert(0, str(level_data.get("difficultyAttackScaling", 0)))
+        
         stat_names = {
             "health": "Health",
             "attack": "Attack",
@@ -111,8 +128,8 @@ class BalancerUI:
             if char in level_data:
                 for stat_key, display_name in stat_names.items():
                     if stat_key in level_data[char]:
-                        tk.Label(panel, text=display_name).pack()
-                        entry = tk.Entry(panel, width=14)
+                        tk.Label(panel, text=display_name, font=BODY_FONT).pack()
+                        entry = tk.Entry(panel, width=14, font=VALUE_FONT)
                         entry.insert(0, str(level_data[char][stat_key]))
                         entry.pack()
                         self.entries[(self.current_level, char, stat_key)] = entry
@@ -122,8 +139,8 @@ class BalancerUI:
             if char in level_data:
                 for stat_key, display_name in stat_names.items():
                     if stat_key in level_data[char]:
-                        tk.Label(panel, text=display_name).pack()
-                        entry = tk.Entry(panel, width=14)
+                        tk.Label(panel, text=display_name, font=BODY_FONT).pack()
+                        entry = tk.Entry(panel, width=14, font=VALUE_FONT)
                         entry.insert(0, str(level_data[char][stat_key]))
                         entry.pack()
                         self.entries[(self.current_level, char, stat_key)] = entry
@@ -139,6 +156,13 @@ class BalancerUI:
                     self.params[level][char][stat] = float(entry.get())
                 except ValueError:
                     pass
+        
+        # Handle difficulty scaling
+        try:
+            self.params[self.current_level]["difficultyAttackScaling"] = float(self.difficulty_entry.get())
+        except ValueError:
+            pass
+        
         self.save_params()
         self.output.insert("end", "Changes applied successfully\n")
 

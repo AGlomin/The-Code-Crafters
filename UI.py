@@ -25,7 +25,6 @@ BUTTON_FONT = ("upheavtt", 12)
 def open_game():
     """Launch the level selector / game entry screen."""
     game_path = os.path.join(BASE_DIR, "LevelSelector.py")
-    root.destroy()
     subprocess.Popen([sys.executable, game_path], cwd=BASE_DIR)
 
 
