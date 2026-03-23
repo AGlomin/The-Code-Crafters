@@ -313,6 +313,13 @@ class Level:
         return self.Level_rows, self.Level_cols
     def setObstacle(self, row, column):
         self.Level_squares[row][column].set_state('0' if self.Level_squares[row][column].get_state() == '1' else '1', None)
+    def getObstacles(self):
+        places = []
+        for rowI, row in enumerate(self.Level_squares):
+            for colI, col in enumerate(row):
+                if col.get_state() == '1':
+                    places.append(f"{rowI}, {colI}")
+        return ', '.join(places)
 # button class
 class Button:
     def __init__(self, screen, size, colour, text_colour, side_size, y, font = None, fontsize = 32, text = ""):
@@ -423,11 +430,12 @@ def load_stage(stageNum, allLevels):
 # saves Level
 def saveStages(allLevels, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol, filename):
     rows, columns = allLevels[0].getRowsAndColumns()
-    #obstacles = allLevels[0].getObstacles()
-    obstacles = ''
+    obstacles = allLevels[0].getObstacles()
     lines = [', '.join([str(rows), str(columns), str(brawlerRow), str(brawlerCol), str(bomberRow), str(bomberCol), str(medicRow), str(medicCol), obstacles])]
     for i in range(3):
         lines.append(allLevels[i].get_info())
+    if filename.split('.')[-1] != 'txt':
+        filename += '.txt'
     with open(filename, 'w') as file:
         file.write('\n'.join(lines))
 # Render the player characters
@@ -566,5 +574,4 @@ while running:
     myScreen.show_screen(mainScreen)
 # Save stages
 saveStages(levels, brawlerRow, brawlerCol, bomberRow, bomberCol, medicRow, medicCol, filename)
-print(adding)
 pygame.quit()
