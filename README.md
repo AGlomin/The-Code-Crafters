@@ -86,11 +86,16 @@ Scrum Board- https://docs.google.com/spreadsheets/d/1BoWglaC-3-RQQE-Y0ZF6Q08MyAX
 ├── agent_information.csv
 ├── classes.py
 ├── LevelHandler.py
+├── LevelEditor.py
+├── LevelSelector.py
 ├── LICENSE
 ├── logintest.py
 ├── mainGame.py
 ├── README.md
 ├── report.txt
+├── auth.py
+├── users.csv
+├── test_level_h.py
 └── UI.py
 </pre>
 # Deployment Guide
