@@ -43,8 +43,9 @@ Malika - Documentation and Comms Lead
 
 ## Project Documentation
 Scrum Board- https://docs.google.com/spreadsheets/d/1BoWglaC-3-RQQE-Y0ZF6Q08MyAXAGwlc6wPbj1PWNmk/edit?usp=sharing 
-<pre>
+
 ## File Structure
+<pre>
 ├── _pycache_/
 │   ├── classes.cpython-312.pyc
 │   └── LevelHandler.cpython-312.pyc
