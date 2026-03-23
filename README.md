@@ -43,7 +43,7 @@ Malika - Documentation and Comms Lead
 
 ## Project Documentation
 Scrum Board- https://docs.google.com/spreadsheets/d/1BoWglaC-3-RQQE-Y0ZF6Q08MyAXAGwlc6wPbj1PWNmk/edit?usp=sharing 
-
+<pre>
 ## File Structure
 ├── _pycache_/
 │   ├── classes.cpython-312.pyc
@@ -91,7 +91,7 @@ Scrum Board- https://docs.google.com/spreadsheets/d/1BoWglaC-3-RQQE-Y0ZF6Q08MyAX
 ├── README.md
 ├── report.txt
 └── UI.py
-
+</pre>
 # Deployment Guide
 This guide explains how to set up the environment, run tests, generate telemetry, and launch the dashboard from a fresh clone.
 
