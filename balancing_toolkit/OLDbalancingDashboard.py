@@ -5,19 +5,60 @@ import json
 with open("balancing_toolkit\\parameters.json", "r") as f:
     params = json.load(f)
 
+def save_params(self):
+        with open("balancing_toolkit\\parameters.json", "w") as f:
+            json.dump( params, f, indent=2)
+
 root = tk.Tk()
 root.title("Balancing Toolkit")
 root.geometry("800x600")
   
-
 levels = list(params.keys())
-display_levels = [f"Level {i}" for i in range(len(levels))]
+display_levels = [f"Level {i+1}" for i in range(len(levels))]
 
 # mapping back for internal use
 display_to_internal = dict(zip(display_levels, levels))
 
 currentLevel = tk.StringVar()
 
+def display_parameters():
+    for panel in [ brawler_panel,  bomber_panel,  medic_panel,  en0_panel,  en1_panel,  en2_panel]:
+        for widget in panel.winfo_children():
+            widget.destroy()
+
+        level_data =  params[currentLevel]
+        stat_names = {
+            "health": "Health",
+            "attack": "Attack",
+            "attack_range": "Range",
+            "move_speed": "Movement"
+        }
+
+        # Players
+        for char, panel in [("brawler", brawler_panel), ("bomber", bomber_panel), ("medic", medic_panel)]:
+            if char in level_data:
+                for stat_key, display_name in stat_names.items():
+                    if stat_key in level_data[char]:
+                        tk.Label(panel, text=display_name).pack()
+                        entry = tk.Entry(panel, width=14)
+                        entry.insert(0, str(level_data[char][stat_key]))
+                        entry.pack()
+                        #entries[(currentLevel, char, stat_key)] = entry
+
+        # Enemies
+        for char, panel in [("en0",  en0_panel), ("en1",  en1_panel), ("en2",  en2_panel)]:
+            if char in level_data:
+                for stat_key, display_name in stat_names.items():
+                    if stat_key in level_data[char]:
+                        tk.Label(panel, text=display_name).pack()
+                        entry = tk.Entry(panel, width=14)
+                        entry.insert(0, str(level_data[char][stat_key]))
+                        entry.pack()
+                        #entries[(currentLevel, char, stat_key)] = entry
+
+def load_level():
+    currentLevel =  level_dropdown.get()
+    display_parameters()
 
 # ---- Top bar ----
 top = tk.Frame(root, padx=12, pady=12)
@@ -182,9 +223,6 @@ en2_movement_label.pack()
 en2_movement = tk.Entry(en2_panel,  width=14)
 en2_movement.pack()
 
-
-def load_level(event):
-   1+0
 
 levelList = ttk.Combobox(top, textvariable=currentLevel, values=display_levels, font = ("TkDefaultFont", 20))
 levelList.bind("<<ComboboxSelected>>", load_level)
