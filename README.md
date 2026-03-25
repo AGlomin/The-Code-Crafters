@@ -125,7 +125,7 @@ python -m pip install pytest pygame pandas matplotlib
 
 ## How to Run Tests
 Run all tests:
-pytest
+python -m pytest
 
 Or in quiet mode:
 
@@ -133,7 +133,7 @@ pytest -q
 
 (All 33 tests should pass. No failures should appear)
 
-Note: PYTHONPATH=. pytest may be needed
+
 
 ## User Interface Launching and User Capabilities
 
