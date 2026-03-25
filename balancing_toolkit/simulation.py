@@ -50,7 +50,7 @@ if __name__=="__main__":
         with open("parameters.json", "r") as f:
             params=json.load(f)
     except:
-        print("Could not load parameters.json".)
+        print("Could not load parameters.json")
         exit()
     run_simulations(params)
 
