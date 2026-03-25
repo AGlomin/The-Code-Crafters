@@ -33,7 +33,7 @@ Aislin - Project Lead/Scrum Master
 
 Ciara - Requirements and UX Lead
 
-Faatimah - Technical Lead
+Faatimah - Technical Lead and UI/System Integration developer
 
 James - Data and ML Lead
 
@@ -72,7 +72,7 @@ Scrum Board- https://docs.google.com/spreadsheets/d/1BoWglaC-3-RQQE-Y0ZF6Q08MyAX
 │   │   ├── events.py
 │   │   ├── logger.py
 │   │   ├── storage.py
-│   │   └── validation.py
+│   │   └── validator.py
 │   └── tests/
 │   │   ├── _init_.py
 │   │   ├── seed_data.py
@@ -83,6 +83,15 @@ Scrum Board- https://docs.google.com/spreadsheets/d/1BoWglaC-3-RQQE-Y0ZF6Q08MyAX
 │   └── funnel.py
 │   ├── mini_test.py
 │   └── telemetry_scheme
+└──balancing_toolkit/
+│   ├── OLDbalancingDashboard.py
+│   ├── README.md
+│   ├── balancer_ui.py
+│   ├── decision_log.json
+│   ├── old params.txt
+│   ├── rule_based_suggestions.py
+│   ├── simulation.py
+│   └── parameters.json
 ├── agent_information.csv
 ├── classes.py
 ├── LevelHandler.py
@@ -125,13 +134,14 @@ python -m pip install pytest pygame pandas matplotlib
 
 ## How to Run Tests
 Run all tests:
-pytest
+python -m pytest
 
 Or in quiet mode:
 
 pytest -q
 
-(All 25 tests should pass. No failures should appear)
+(All 33 tests should pass. No failures should appear)
+
 
 
 ## User Interface Launching and User Capabilities
@@ -211,6 +221,8 @@ To confirm telemetry is being recorded:
 tail -n 5 telemetry/telemetry.csv
 
 (You should see recent event entries (e.g. stage_start, stage_complete, session_end))
+
+A seeded dataset is included for consistent testing and demonstration of analytics.
 
 ## Run the Analytics Dashboard
 Launch the dashboard:

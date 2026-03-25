@@ -2,7 +2,7 @@ from tkinter import filedialog
 
 import pygame
 import LevelHandler
-# trying to understand my code here is like trying to decipher ancient heiroglyphics so I will need to add comments once this is more functional
+
 # screen class. was originally the whole screen, changed it to work as a surface
 class Screen:
     def __init__ (self, width, height, bg_colour, side_size = 0, top = 0, left = 0):

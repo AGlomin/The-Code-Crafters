@@ -1,6 +1,4 @@
-{
-  "comments": "runs three total simulations everytime simulation.py runs. simulation.py checks all attributes of all players and enemies and adds suggestions.",
-}
+
 
 [
   {"level": "level0",
