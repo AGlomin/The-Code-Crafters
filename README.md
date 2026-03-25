@@ -133,6 +133,7 @@ pytest -q
 
 (All 33 tests should pass. No failures should appear)
 
+Note: PYTHONPATH=. pytest may be needed
 
 ## User Interface Launching and User Capabilities
 
