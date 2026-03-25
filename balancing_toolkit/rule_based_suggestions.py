@@ -4,13 +4,13 @@ def suggest_level_changes(params, level_key):
   level=params[level_key]
 
   #diffficulty scaling
-  if level["difficulltyAttackScaling"]>0.5:
+  if level["difficultyAttackScaling"]>0.5:
     suggestions.append(f"{level_key}:Difficulty scaling is too high.")
   if level["difficultyAttackScaling"]<0.1:
     suggestions.append(f"{level_key}: Difficulty scaling is too low (game might be too easy).")
 
   #Player agents
-  for player in ["brawler","Bomber","medic"]:
+  for player in ["brawler","bomber","medic"]:
     p=level[player]
 
     if p["health"]<=0:
@@ -44,27 +44,29 @@ def suggest_level_changes(params, level_key):
 
 #balance comparison rules
 #compare player vs enemy strength
-avg_player_attack=(
-  level["brawler"]["attack"]+
-  level["bomber"]["attack"]+
-  level["medic"]["attack"]
-)/3
+  avg_player_attack= (
+    level["brawler"]["attack"]+
+    level["bomber"]["attack"]+
+    level["medic"]["attack"]
+   ) / 3
 
-avg_enemy_health=(
-  level["en0"]["health"]+
-  level["en1"]["health"]+
-  level["en2"]["health"]
-)/3
+  avg_enemy_health= (
+    level["en0"]["health"]+
+    level["en1"]["health"]+
+    level["en2"]["health"]
+) / 3
 
-if avg_enemy_health> avg_player_attack *5:
-  suggestions.append(f"{level_key}: Enemies may take too long to kill.")
+  if avg_enemy_health> avg_player_attack *5:
+    suggestions.append(f"{level_key}: Enemies may take too long to kill.")
 
-if avg_player_attack> avg_enemy_health:
-  suggestions.append(f"{level_key}: Players may be too strong compared to enemies.")
+  if avg_player_attack> avg_enemy_health:
+    suggestions.append(f"{level_key}: Players may be too strong compared to enemies.")
 
 #config check
-if all(level[player]["health"]==0 for player in ["brawler", "bomber", "medic"]):
-  suggestions.append(f"{level_key}: All player stats are zero- level not configured.")
+  if all(level[player]["health"]==0 for player in ["brawler", "bomber", "medic"]):
+    suggestions.append(f"{level_key}: All player stats are zero- level not configured.")
 
-if all(level[enemy]["health"]==0 for enemy in ["en0", "en1","en2"]):
-  suggestions.append(f"{level_key}: All enemy stats are zero- no challenge present.")
+  if all(level[enemy]["health"]==0 for enemy in ["en0", "en1","en2"]):
+    suggestions.append(f"{level_key}: All enemy stats are zero- no challenge present.")
+
+  return suggestions
