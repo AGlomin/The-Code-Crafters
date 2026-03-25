@@ -33,7 +33,7 @@ Aislin - Project Lead/Scrum Master
 
 Ciara - Requirements and UX Lead
 
-Faatimah - Technical Lead
+Faatimah - Technical Lead and UI/System Integration developer
 
 James - Data and ML Lead
 
