@@ -12,4 +12,3 @@ It includes:
 
 4. Decison Log tied to evidence
 
-5. Gameplay data

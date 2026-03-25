@@ -45,6 +45,7 @@ Malika - Documentation and Comms Lead
 Scrum Board- https://docs.google.com/spreadsheets/d/1BoWglaC-3-RQQE-Y0ZF6Q08MyAXAGwlc6wPbj1PWNmk/edit?usp=sharing 
 
 ## File Structure
+<pre>
 ├── _pycache_/
 │   ├── classes.cpython-312.pyc
 │   └── LevelHandler.cpython-312.pyc
@@ -85,13 +86,18 @@ Scrum Board- https://docs.google.com/spreadsheets/d/1BoWglaC-3-RQQE-Y0ZF6Q08MyAX
 ├── agent_information.csv
 ├── classes.py
 ├── LevelHandler.py
+├── LevelEditor.py
+├── LevelSelector.py
 ├── LICENSE
 ├── logintest.py
 ├── mainGame.py
 ├── README.md
 ├── report.txt
+├── auth.py
+├── users.csv
+├── test_level_h.py
 └── UI.py
-
+</pre>
 # Deployment Guide
 This guide explains how to set up the environment, run tests, generate telemetry, and launch the dashboard from a fresh clone.
 
