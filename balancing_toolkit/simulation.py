@@ -1,5 +1,5 @@
 import json #to load params
-from suggestions import suggest_level_changes
+from rule_based_suggestions import suggest_level_changes
 
 #prevent sim from crashing due to typos
 def safe_get(level, key, default=0):
