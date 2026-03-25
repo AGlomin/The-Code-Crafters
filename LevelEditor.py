@@ -546,7 +546,7 @@ while running:
                     if partAdded != -1:
                         if delete:
                             if rowAdded:
-                                print(f"Row: {partAdded}")
+                                #print(f"Row: {partAdded}")
                                 if partAdded <= brawlerRow:
                                     brawlerRow -= 1
                                 if partAdded <= bomberRow:
@@ -554,7 +554,7 @@ while running:
                                 if partAdded < medicRow:
                                     medicRow -= 1
                             else:
-                                print(f"Col: {partAdded}")
+                                #print(f"Col: {partAdded}")
                                 if partAdded <= brawlerCol:
                                     brawlerCol -= 1
                                 if partAdded <= bomberCol:
@@ -564,7 +564,7 @@ while running:
                             # TODO: fix overlaps, revert changes if error
                         else:
                             if rowAdded:
-                                print(f"Row: {partAdded}")
+                                #print(f"Row: {partAdded}")
                                 if partAdded <= brawlerRow:
                                     brawlerRow += 1
                                 if partAdded <= bomberRow:
@@ -572,7 +572,7 @@ while running:
                                 if partAdded <= medicRow:
                                     medicRow += 1
                             else:
-                                print(f"Col: {partAdded}")
+                                #print(f"Col: {partAdded}")
                                 if partAdded <= brawlerCol:
                                     brawlerCol += 1
                                 if partAdded <= bomberCol:
