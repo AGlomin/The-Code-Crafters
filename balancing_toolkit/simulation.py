@@ -28,7 +28,7 @@ def run_simulations(params):
     results={}
 
     for level_key, level_data in params.items():
-        print(f"\n=== {level_key.upper()}===")
+        print(f"\n=== {level_key.upper()} ===")
         suggestions=suggest_level_changes(params,level_key)
         turns=simulate_level(level_data)
         results[level_key]={
@@ -37,7 +37,7 @@ def run_simulations(params):
         }
         #prints results
         print(f"Estimated turns to defeat enemies: {turns}")
-        print("suggestions:")
+        print("Suggestions:")
         if suggestions:
             for s in suggestions:
                 print("-",s)
@@ -52,5 +52,5 @@ if __name__=="__main__":
     except:
         print("Could not load parameters.json")
         exit()
-    run_simulations(params)
+    results=run_simulations(params)
 
