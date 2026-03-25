@@ -131,7 +131,7 @@ Or in quiet mode:
 
 pytest -q
 
-(All 25 tests should pass. No failures should appear)
+(All 33 tests should pass. No failures should appear)
 
 
 ## User Interface Launching and User Capabilities
