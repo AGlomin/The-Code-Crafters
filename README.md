@@ -45,6 +45,7 @@ Malika - Documentation and Comms Lead
 Scrum Board- https://docs.google.com/spreadsheets/d/1BoWglaC-3-RQQE-Y0ZF6Q08MyAXAGwlc6wPbj1PWNmk/edit?usp=sharing 
 
 ## File Structure
+<pre>
 ├── _pycache_/
 │   ├── classes.cpython-312.pyc
 │   └── LevelHandler.cpython-312.pyc
@@ -85,13 +86,18 @@ Scrum Board- https://docs.google.com/spreadsheets/d/1BoWglaC-3-RQQE-Y0ZF6Q08MyAX
 ├── agent_information.csv
 ├── classes.py
 ├── LevelHandler.py
+├── LevelEditor.py
+├── LevelSelector.py
 ├── LICENSE
 ├── logintest.py
 ├── mainGame.py
 ├── README.md
 ├── report.txt
+├── auth.py
+├── users.csv
+├── test_level_h.py
 └── UI.py
-
+</pre>
 # Deployment Guide
 This guide explains how to set up the environment, run tests, generate telemetry, and launch the dashboard from a fresh clone.
 
@@ -127,11 +133,79 @@ pytest -q
 
 (All 25 tests should pass. No failures should appear)
 
-## Run the Game (Generate Telemetry)
-Start the game:
-python mainGame.py
 
-(Gameplay events are automatically written to telemetry/telemetry.csv)
+## User Interface Launching and User Capabilities
+
+The user interface is launched through the main login screen, which controls access to features based on the type of user. After logging in, users are directed to a menu showing only the functions available to their role.
+
+### Launching the User Interface
+Run the interface with:
+
+python UI.py
+
+After login, selecting **Play Game** takes the user to the **Level Selector** screen.
+
+### User Types and Capabilities
+
+The system has four users in total:
+- 2 Players
+- 1 Designer
+- 1 Maintainer
+
+### Login Credentials
+
+| User Type  |   Username  |   Password  |
+|------------|-------------|-------------|
+| Player 1   | player1     | pass123     |
+| Player 2   | player2     | pass234     |
+| Designer   | designer1   | design123   |
+| Maintainer | maintainer1 | maintain123 |
+
+#### Player Accounts
+Player users are restricted to gameplay only. They can:
+- Log in
+- Access Play Game
+- Open the Level Selector
+- Play unlocked levels only
+
+Players cannot access:
+- Analytics dashboard
+- Balancing toolkit
+
+#### Designer Account
+The Designer has access to all major system tools. They can:
+- Play the game
+- Access the analytics dashboard
+- Access the balancing toolkit
+
+#### Maintainer Account
+The Maintainer also has full system access. They can:
+- Play the game
+- Access the analytics dashboard
+- Access the balancing toolkit
+
+### Level Progression and Unlocking
+When a user selects Play Game, they are taken to the Level Selector.
+
+The Level Selector uses a progression-based unlock system:
+- The first level is available from the start
+- Later levels remain locked until earlier levels are completed
+- A player must complete Level 1 before Level 2 becomes available
+- This continues for subsequent levels
+
+This progression system ensures structured gameplay and allows telemetry to track how players progress through stages over time.
+
+### Summary of Access Rights
+
+| User Type  | Play Game | Dashboard | Balancing Toolkit |
+|------------|-----------|-----------|-------------------|
+| Player 1   | Yes       | No        | No                |
+| Player 2   | Yes       | No        | No                |
+| Designer   | Yes       | Yes       | Yes               |
+| Maintainer | Yes       | Yes       | Yes               |
+
+### To confirm Telemetery capture
+Gameplay events are automatically written to telemetry/telemetry.csv
 
 To confirm telemetry is being recorded:
 tail -n 5 telemetry/telemetry.csv

@@ -1,19 +1,9 @@
-,user_id,username,password,role,can_play,can_dashboard,can_balance,playableEasy,playableNormal,playableHard
-0,U001,player1,pass123,player,True,False,False,1.0,0.0,0.0
-1,U002,player2,pass234,player,True,False,False,0.0,0.0,0.0
-2,U003,designer1,design123,designer,True,True,True,0.0,0.0,0.0
-3,U004,maintainer1,maintain123,maintainer,True,True,True,0.0,0.0,0.0
-4,,,,,,,,,,
-5,### username and passwords,,,,,,,,,
-6,## player 1,,,,,,,,,
-7,# username: player1,,,,,,,,,
-8,# password: pass123,,,,,,,,,
-9,## player 2,,,,,,,,,
-10,# username: player2,,,,,,,,,
-11,# password: pass234,,,,,,,,,
-12,## designer,,,,,,,,,
-13,# username: designer1,,,,,,,,,
-14,# password: design23,,,,,,,,,
-15,## maintainer,,,,,,,,,
-16,# username: maintainer1,,,,,,,,,
-17,# password: maintain123,,,,,,,,,
+user_id,username,password,role,can_play,can_dashboard,can_balance
+U001,player1,pass123,player,True,False,False
+U002,player2,pass234,player,True,False,False
+U003,designer1,design123,designer,True,True,True
+U004,maintainer1,maintain123,maintainer,True,True,True
+
+
+
+

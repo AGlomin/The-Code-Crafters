@@ -158,6 +158,9 @@ class Level:
     # over-complicated code just for editing the Level (changing state, or adding/removing rows/columns, depending on the mode and where clicked)
     def Level_click(self, mx, my, screen, addMode, levels, adding):
         square, row, col = self.find_collision(mx, my)
+        partAdded = -1
+        rowAdded = False
+        delete = False
         # square clicked
         if square:
             if addMode == 3:
@@ -216,7 +219,7 @@ class Level:
                         partAdded = square_col
                         rowAdded = False
                         delete = False
-            else:
+            elif addMode == 1:
                 for level in levels:
                     if abs(mx-screen_width//2)>self.Level_squares[-1][-1].get_x()-screen_width//2+size//2:
                         level.delete_row(square_row, screen)
@@ -306,13 +309,22 @@ class Level:
             #Level_arr.append(''.join(Level_row))
         return ', '.join(enemyArr)
     def setEnemy(self, enemyId, enemyRow, enemyColumn):
-        self.Level_squares[enemyRow][enemyColumn].set_state(enemyId, pygame.image.load(f'assets/{enemyId}Proto.png'))
+        try:
+            self.Level_squares[enemyRow][enemyColumn].set_state(enemyId, pygame.image.load(f'assets/{enemyId}Proto.png'))
+        except:
+            return
     def removeEnemy(self, row, column):
-        self.Level_squares[row][column].set_state('0', None)
+        try:
+            self.Level_squares[row][column].set_state('0', None)
+        except:
+            return
     def getRowsAndColumns(self):
         return self.Level_rows, self.Level_cols
     def setObstacle(self, row, column):
-        self.Level_squares[row][column].set_state('0' if self.Level_squares[row][column].get_state() == '1' else '1', None)
+        try:
+            self.Level_squares[row][column].set_state('0' if self.Level_squares[row][column].get_state() == '1' else '1', None)
+        except:
+            return
     def getObstacles(self):
         places = []
         for rowI, row in enumerate(self.Level_squares):
@@ -534,34 +546,38 @@ while running:
                     if partAdded != -1:
                         if delete:
                             if rowAdded:
-                                if partAdded < brawlerRow:
+                                #print(f"Row: {partAdded}")
+                                if partAdded <= brawlerRow:
                                     brawlerRow -= 1
-                                if partAdded < bomberRow:
+                                if partAdded <= bomberRow:
                                     bomberRow -= 1
                                 if partAdded < medicRow:
                                     medicRow -= 1
                             else:
-                                if partAdded < brawlerCol:
+                                #print(f"Col: {partAdded}")
+                                if partAdded <= brawlerCol:
                                     brawlerCol -= 1
-                                if partAdded < bomberRow:
+                                if partAdded <= bomberCol:
                                     bomberCol -= 1
-                                if partAdded < medicRow:
+                                if partAdded <= medicCol:
                                     medicCol -= 1
                             # TODO: fix overlaps, revert changes if error
                         else:
                             if rowAdded:
-                                if partAdded < brawlerRow:
+                                #print(f"Row: {partAdded}")
+                                if partAdded <= brawlerRow:
                                     brawlerRow += 1
-                                if partAdded < bomberRow:
+                                if partAdded <= bomberRow:
                                     bomberRow += 1
-                                if partAdded < medicRow:
+                                if partAdded <= medicRow:
                                     medicRow += 1
                             else:
-                                if partAdded < brawlerCol:
+                                #print(f"Col: {partAdded}")
+                                if partAdded <= brawlerCol:
                                     brawlerCol += 1
-                                if partAdded < bomberRow:
+                                if partAdded <= bomberCol:
                                     bomberCol += 1
-                                if partAdded < medicRow:
+                                if partAdded <= medicCol:
                                     medicCol += 1
     myScreen.render_background()
     myLevel.render(myScreen, mx, my, mode)

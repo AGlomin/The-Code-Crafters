@@ -1,0 +1,50 @@
+{
+  "comments": "runs three total simulations everytime simulation.py runs. simulation.py checks all attributes of all players and enemies and adds suggestions.",
+}
+
+[
+  {"level": "level0",
+  "problem":"Level not configured",
+  "Proof":"All player and enemy stats are zero. Estimated turns were infinite.",
+  "Suggestion": "Set baseline stats for all agents(players and enemies)",
+  "Decision":"Initiallize agent stats using values from agent's information csv"
+  },
+  {"level": "level0",
+  "problem":"No gameplay possible",
+  "Proof":"Player attack is zero, simulation returned infinite turns.",
+  "Suggestion": "Increase player's attack values",
+  "Decision":"Set brawler, bomber and medic attack above 0 in balancing dashboard"
+  },
+  
+  {"level": "level1",
+  "problem":"Level too easy",
+  "Proof":"Only took 1 turn to win.",
+  "Suggestion": "Increase enemy health.",
+  "Decision":"Increase enemy health and fix invalid enemy stats"
+  },
+  {"level": "level1",
+  "problem":"Invalid enemy configuration",
+  "Proof":"Enemy health is zero, negative attack and attack range identified.",
+  "Suggestion": "Make sure enemy stats are positive.",
+  "Decision":"Reset enemy stats using baseline values from agents csv."
+  },
+  {"level": "level1",
+  "problem":"Unbalanced player stats",
+  "Proof":"Some player attacks were 0 making the balance unfeasible.",
+  "Suggestion": "Ensure all players have valid stats.",
+  "Decision":"Restore brawler and bomber stats to baseline values as indicated in agents csv."
+  },
+
+  {"level": "level2",
+  "problem":"Level unconfigured",
+  "Proof":"All stats were found to be zero and therefore estimated turns were infinite",
+  "Suggestion": "Define stats for all player and enemy agents.",
+  "Decision":"Apply baseline configurations from agents csv file"
+  },
+  {"level": "level2",
+  "problem":"Lack of a challenge",
+  "Proof":"Enemies were found to have zero health making defeat futile.",
+  "Suggestion": "Increase enemy health.",
+  "Decision":"Increase enemy health and fix invalid enemy stats"
+  }
+]
