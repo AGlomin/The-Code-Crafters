@@ -1,24 +1,18 @@
-#rule based suggestions.py
-
 import os
 import pandas as pd
-
-# cant just do this so copying whole fuction 
-# from mainGame import getPlayerAndEnemyInformation
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_DIR)
 AGENT_INFO_PATH = os.path.join(ROOT_DIR, "agent_information.csv")
 
 def getPlayerAndEnemyInformation():
-    # Simple approach: read the CSV and convert each row to a plain dict
     players = {}
     enemies = {}
 
     with open(AGENT_INFO_PATH, newline="", encoding="utf-8") as csvfile:
         reader = pd.read_csv(csvfile)
 
-    # Convert DataFrame rows into list of dicts so it is easier to reason about
+    # Convert CSV rows into list of dicts
     row_data = reader.to_dict(orient="records")
 
     for item in row_data:
@@ -87,6 +81,7 @@ def suggest_level_changes(params, level_key):
 
   #balance comparison rules
   #compare player vs enemy strength
+  #sums base and balance stats to get averages
   avg_player_attack=(
     basePlayers["brawler"]["attack"]+
     basePlayers["bomber"]["attack"]+
