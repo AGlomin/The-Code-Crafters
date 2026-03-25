@@ -1,8 +1,5 @@
 {
-  "comments": "runs three total simulations evrytime simulation.py runs. simulation.py checks all attributes of all players and enemies and adds suggestions.",
-  "decisions": [
-    { ... }
-  ]
+  "comments": "runs three total simulations everytime simulation.py runs. simulation.py checks all attributes of all players and enemies and adds suggestions.",
 }
 
 [
